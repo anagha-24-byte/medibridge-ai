@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediBridge AI - Healthcare Accessibility Assistant</title>
+  <meta name="description" content="AI-powered healthcare accessibility assistant translating complex medical information and documents into plain language across 13+ languages.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- PDF.js Client-Side Document Reader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if (typeof pdfjsLib !== 'undefined') { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased">
+
+  <!-- Persistent Medical Safety & Emergency Alert Banner -->
+  <div id="safety-alert-banner" class="bg-amber-500 text-slate-950 px-4 py-2 text-xs md:text-sm font-medium border-b border-amber-600 shadow-xs">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2">
+        <span class="text-base shrink-0">🛡️</span>
+        <span>
+          <strong data-i18n="safetyBannerTitle">Medical Safety Notice:</strong>
+          <span data-i18n="safetyBannerText">MediBridge AI is strictly an educational tool. We NEVER diagnose diseases or prescribe medications.</span>
+        </span>
+      </div>
+      
+      <!-- Dynamic Regional Emergency Hotlines -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1.5 bg-amber-600/30 px-2 py-0.5 rounded border border-amber-600/50">
+          <span class="text-[11px] font-bold">📍 Region:</span>
+          <select id="banner-state-select" class="bg-amber-700 text-white font-semibold rounded px-1.5 py-0.5 text-xs focus:outline-none cursor-pointer">
+            <option value="karnataka">Karnataka (KA)</option>
+            <option value="maharashtra">Maharashtra (MH)</option>
+            <option value="andhra_pradesh">Andhra Pradesh (AP)</option>
+            <option value="telangana">Telangana (TG)</option>
+            <option value="tamil_nadu">Tamil Nadu (TN)</option>
+            <option value="kerala">Kerala (KL)</option>
+            <option value="delhi">Delhi NCR (DL)</option>
+            <option value="gujarat">Gujarat (GJ)</option>
+            <option value="west_bengal">West Bengal (WB)</option>
+            <option value="national_india">All India (National)</option>
+            <option value="international_us">International (US/Global)</option>
+          </select>
+        </div>
+        <div id="banner-emergency-hotlines" class="flex items-center gap-1.5 text-xs">
+          <!-- Populated dynamically: Ambulance 108, Tele-health 104, 112 -->
+        </div>
+        <div class="flex items-center gap-2 shrink-0 ml-1">
+          <button type="button" class="open-safety-modal-btn underline hover:text-slate-900 text-xs">Learn More</button>
+          <button type="button" id="dismiss-banner-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-xs transition" data-i18n="safetyBannerDismiss">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Header & Navigation -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-2xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Branding -->
+        <a href="#home" class="flex items-center gap-2.5 group cursor-pointer" data-jump="home">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-700 to-primary-500 flex items-center justify-center text-white shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-lg leading-tight flex items-center gap-1.5">
+              <span>MediBridge</span>
+              <span class="text-xs px-1.5 py-0.5 rounded-md bg-primary-100 text-primary-800 font-extrabold uppercase tracking-wide">AI</span>
+            </div>
+            <p class="text-[11px] text-slate-500 hidden sm:block">Healthcare Accessibility Assistant</p>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium">
+          <a href="#home" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition active-nav" data-target="home" data-i18n="navHome">Home</a>
+          <a href="#simplifier" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="simplifier" data-i18n="navSimplifier">Medical Simplifier</a>
+          <a href="#explainer" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="explainer" data-i18n="navExplainer">Document Explainer</a>
+          <a href="#hospitals" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="hospitals" data-i18n="navHospitals">Nearby Hospitals</a>
+          <a href="#checklist" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="checklist" data-i18n="navChecklist">Action Checklist</a>
+          <a href="#navigator" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="navigator" data-i18n="navNavigator">Healthcare Resources</a>
+          <a href="#language" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="language" data-i18n="navLanguage">Language Hub</a>
+          <a href="#assistant" class="nav-link px-2.5 py-1.5 text-slate-600 hover:text-primary-700 transition" data-target="assistant" data-i18n="navAssistant">Health Assistant</a>
+        </nav>
+
+        <!-- Right Controls: Accessibility, Language Selector & Settings -->
+        <div class="flex items-center gap-2">
+          
+          <!-- Accessibility: Font Scaling -->
+          <div class="hidden sm:inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5" title="Adjust text size">
+            <button type="button" id="font-size-dec" class="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 rounded transition" title="Decrease font size">A-</button>
+            <button type="button" id="font-size-inc" class="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 rounded transition" title="Increase font size">A+</button>
+          </div>
+
+          <!-- Accessibility: High Contrast Mode -->
+          <button type="button" id="toggle-contrast-btn" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition border border-slate-200 text-xs font-semibold" title="Toggle High Contrast Mode (WCAG AAA)">
+            🌓
+          </button>
+
+          <!-- Language Selector -->
+          <div class="relative">
+            <select id="global-lang-select" class="bg-slate-100 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-primary-500 focus:outline-none cursor-pointer">
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+              <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+              <option value="mr">🇮🇳 मराठी (Marathi)</option>
+              <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+              <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+              <option value="bn">🇧🇩 বাংলা (Bengali)</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="zh">🇨🇳 简体中文</option>
+              <option value="ar">🇸🇦 العربية</option>
+              <option value="pt">🇧🇷 Português</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="tl">🇵🇭 Tagalog</option>
+              <option value="vi">🇻🇳 Tiếng Việt</option>
+            </select>
+          </div>
+
+          <!-- Settings Button -->
+          <button type="button" id="open-settings-btn" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition" title="Settings & Offline Mode">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Bar -->
+      <div class="flex md:hidden overflow-x-auto py-2 space-x-1 border-t border-slate-100 text-xs">
+        <a href="#home" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap active-nav" data-target="home" data-i18n="navHome">Home</a>
+        <a href="#simplifier" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="simplifier" data-i18n="navSimplifier">Simplifier</a>
+        <a href="#explainer" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="explainer" data-i18n="navExplainer">Explainer</a>
+        <a href="#hospitals" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="hospitals" data-i18n="navHospitals">Hospitals</a>
+        <a href="#checklist" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="checklist" data-i18n="navChecklist">Checklist</a>
+        <a href="#navigator" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="navigator" data-i18n="navNavigator">Resources</a>
+        <a href="#language" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="language" data-i18n="navLanguage">Languages</a>
+        <a href="#assistant" class="nav-link px-2.5 py-1 rounded-md text-slate-600 whitespace-nowrap" data-target="assistant" data-i18n="navAssistant">Assistant</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-grow">
+
+    <!-- =========================================================================
+         SECTION 1: HOME
+         ========================================================================= -->
+    <section id="section-home" class="app-section">
+      <!-- Hero Section -->
+      <div class="relative overflow-hidden bg-gradient-to-b from-primary-50/70 via-white to-slate-50 border-b border-slate-200 py-12 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100/80 border border-primary-200 text-primary-800 text-xs font-semibold mb-6">
+            <span class="w-2 h-2 rounded-full bg-primary-600 animate-pulse"></span>
+            <span data-i18n="heroBadge">Healthcare Equity & Health Literacy Assistant • Hackathon Prototype</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight mb-5" data-i18n="heroTitle">
+            Understand Your Health in Plain, Compassionate Words
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed" data-i18n="heroSubtitle">
+            Transform complex clinical jargon, confusing lab results, and hospital discharge instructions into easy-to-understand explanations in your own language — without replacing your doctor.
+          </p>
+
+          <!-- Call to action buttons -->
+          <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
+            <button type="button" class="px-5 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/25 transition transform hover:-translate-y-0.5 flex items-center gap-1.5" data-jump="simplifier" data-i18n="heroCtaSimplifier">
+              <span>📖</span> <span>Simplify Medical Terms</span>
+            </button>
+            <button type="button" class="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-sm shadow-xs transition flex items-center gap-1.5" data-jump="explainer" data-i18n="heroCtaExplainer">
+              <span>📑</span> <span>Explain a Medical Document</span>
+            </button>
+            <button type="button" class="px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shadow-md shadow-rose-600/25 transition transform hover:-translate-y-0.5 flex items-center gap-1.5" data-jump="hospitals" data-i18n="heroCtaHospitals">
+              <span>🏥</span> <span>Find Nearby Hospitals</span>
+            </button>
+            <button type="button" class="px-5 py-3 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-semibold text-sm transition flex items-center gap-1.5" data-jump="assistant" data-i18n="heroCtaAssistant">
+              <span>💬</span> <span>Talk with Health Assistant</span>
+            </button>
+          </div>
+
+          <!-- Impact Metrics -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+            <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div class="text-2xl font-extrabold text-primary-700 mb-1" data-i18n="stat1Number">9 in 10</div>
+              <p class="text-xs text-slate-600 leading-snug" data-i18n="stat1Label">Adults struggle to understand clinical medical paperwork</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div class="text-2xl font-extrabold text-primary-700 mb-1" data-i18n="stat2Number">13+</div>
+              <p class="text-xs text-slate-600 leading-snug" data-i18n="stat2Label">Languages supported for multi-generational families</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div class="text-2xl font-extrabold text-primary-700 mb-1" data-i18n="stat3Number">100%</div>
+              <p class="text-xs text-slate-600 leading-snug" data-i18n="stat3Label">Client-side privacy — health text stays on your device</p>
+            </div>
+            <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+              <div class="text-2xl font-extrabold text-amber-600 mb-1" data-i18n="stat4Number">0</div>
+              <p class="text-xs text-slate-600 leading-snug" data-i18n="stat4Label">Prescriptions or diagnoses — strictly educational safety</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2" data-i18n="featuresHeading">How MediBridge AI Empowers You</h2>
+          <p class="text-sm sm:text-base text-slate-600" data-i18n="featuresSubheading">Designed with safety, simplicity, and cultural accessibility at the center</p>
+        </div>
+
+        <!-- Primary 3 Core Pillars -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          
+          <!-- Primary 1: Medical Simplifier -->
+          <div class="p-6 rounded-2xl bg-white border-2 border-primary-200/80 shadow-sm hover:border-primary-400 hover:shadow-md transition cursor-pointer flex flex-col justify-between" data-jump="simplifier">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center text-2xl mb-4 shadow-2xs">
+                📖
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg mb-2" data-i18n="feat1Title">Medical Jargon Buster</h3>
+              <p class="text-xs text-slate-600 leading-relaxed mb-4" data-i18n="feat1Desc">
+                Instantly translate intimidating clinical terms into 5th-grade plain language with everyday real-world analogies.
+              </p>
+            </div>
+            <span class="text-xs font-bold text-primary-700 hover:text-primary-800 flex items-center gap-1">
+              Open Simplifier →
+            </span>
+          </div>
+
+          <!-- Primary 2: Document Explainer -->
+          <div class="p-6 rounded-2xl bg-white border-2 border-teal-200/80 shadow-sm hover:border-teal-400 hover:shadow-md transition cursor-pointer flex flex-col justify-between" data-jump="explainer">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-2xl mb-4 shadow-2xs">
+                📑
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg mb-2" data-i18n="feat2Title">Lab & Document Explainer</h3>
+              <p class="text-xs text-slate-600 leading-relaxed mb-4" data-i18n="feat2Desc">
+                Upload or paste blood tests, discharge summaries, or radiology reports to get clear breakdowns and doctor question lists.
+              </p>
+            </div>
+            <span class="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1">
+              Analyze Documents →
+            </span>
+          </div>
+
+          <!-- Primary 3: Nearby Hospitals & Emergency Contacts -->
+          <div class="p-6 rounded-2xl bg-white border-2 border-rose-300 shadow-sm hover:border-rose-500 hover:shadow-md transition cursor-pointer flex flex-col justify-between" data-jump="hospitals">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-2xl mb-4 shadow-2xs">
+                🏥
+              </div>
+              <h3 class="font-bold text-slate-900 text-lg mb-2" data-i18n="featHospitalsTitle">Nearby Hospitals</h3>
+              <p class="text-xs text-slate-600 leading-relaxed mb-4" data-i18n="featHospitalsDesc">
+                Find nearby hospitals, view verified contact details, and access emergency contact information based on your location.
+              </p>
+            </div>
+            <span class="text-xs font-bold text-rose-700 hover:text-rose-800 flex items-center gap-1">
+              Find Nearby Hospitals →
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Secondary Specialized Support Tools -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Secondary: Action Checklist -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 transition cursor-pointer" data-jump="checklist">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-lg">✅</span>
+              <h4 class="font-bold text-slate-800 text-xs">Doctor Action Checklist</h4>
+            </div>
+            <p class="text-[11px] text-slate-500">Track questions for your appointment and export printable checklists.</p>
+          </div>
+
+          <!-- Secondary: Healthcare Resources Directory -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 transition cursor-pointer" data-jump="navigator">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-lg">🗺️</span>
+              <h4 class="font-bold text-slate-800 text-xs">Healthcare Resources</h4>
+            </div>
+            <p class="text-[11px] text-slate-500">Official government schemes, helplines, and state apex hospitals.</p>
+          </div>
+
+          <!-- Secondary: Multilingual Hub -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 transition cursor-pointer" data-jump="language">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-lg">🌐</span>
+              <h4 class="font-bold text-slate-800 text-xs">Multilingual Hub (15 Langs)</h4>
+            </div>
+            <p class="text-[11px] text-slate-500">Kannada, Marathi, Telugu, Tamil, Hindi, English, and global languages.</p>
+          </div>
+
+          <!-- Secondary: Health Assistant -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 transition cursor-pointer" data-jump="assistant">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-lg">💬</span>
+              <h4 class="font-bold text-slate-800 text-xs">Health Assistant</h4>
+            </div>
+            <p class="text-[11px] text-slate-500">Ask safe health literacy questions with strict ethical guardrails.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Emergency Red-Flag Protocol Box -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div class="rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border-2 border-red-200 p-6 md:p-8 shadow-xs">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🚨</span>
+                <h3 class="text-lg md:text-xl font-bold text-red-900" data-i18n="emergencyTitle">When to Seek Emergency Care Immediately</h3>
+              </div>
+              <p class="text-xs md:text-sm text-red-700 font-medium" data-i18n="emergencyDesc">
+                Never use this or any AI tool if you are experiencing severe or life-threatening symptoms:
+              </p>
+              <ul class="text-xs text-red-800 list-disc list-inside space-y-1 pt-1">
+                <li>Crushing chest pain, pressure, or tightness spreading to arm, jaw, or back</li>
+                <li>Sudden severe shortness of breath or inability to catch your breath</li>
+                <li>Sudden numbness, facial drooping, or slurred speech (Signs of Stroke - FAST)</li>
+                <li>Uncontrolled heavy bleeding, sudden confusion, or loss of consciousness</li>
+              </ul>
+            </div>
+
+            <!-- Dynamic State Selector & Emergency Numbers -->
+            <div class="shrink-0 w-full lg:w-auto bg-white/80 p-4 rounded-xl border border-red-200 shadow-2xs space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-xs font-bold text-red-900 flex items-center gap-1">
+                  <span>📍</span> <span>Selected Region:</span>
+                </span>
+                <select id="home-state-select" class="bg-red-50 border border-red-300 text-red-900 font-semibold rounded-lg px-2.5 py-1 text-xs focus:outline-none cursor-pointer">
+                  <option value="karnataka">Karnataka (KA)</option>
+                  <option value="maharashtra">Maharashtra (MH)</option>
+                  <option value="andhra_pradesh">Andhra Pradesh (AP)</option>
+                  <option value="telangana">Telangana (TG)</option>
+                  <option value="tamil_nadu">Tamil Nadu (TN)</option>
+                  <option value="kerala">Kerala (KL)</option>
+                  <option value="delhi">Delhi NCR (DL)</option>
+                  <option value="gujarat">Gujarat (GJ)</option>
+                  <option value="west_bengal">West Bengal (WB)</option>
+                  <option value="national_india">All India (National)</option>
+                  <option value="international_us">International (US/Global)</option>
+                </select>
+              </div>
+
+              <!-- State Helplines Container -->
+              <div id="home-state-helplines" class="flex flex-wrap gap-2">
+                <!-- Dynamically populated: 108 Ambulance, 104 Advisory, 112 Unified -->
+              </div>
+
+              <div class="pt-2 border-t border-red-100 flex items-center justify-between text-[11px]">
+                <button type="button" class="text-red-700 font-semibold hover:underline flex items-center gap-1" data-jump="navigator">
+                  <span>🏥</span> <span>Find Nearest Public Hospitals →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safety & Privacy Commitment Cards -->
+      <div class="bg-white border-t border-slate-200 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-10">
+            <h3 class="text-xl font-bold text-slate-900 mb-2" data-i18n="safetyModalTitle">Our Medical Safety & Privacy Pledge</h3>
+            <p class="text-xs text-slate-500">How we protect patients, support doctors, and keep your data safe</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="font-bold text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                <span>🛡️</span>
+                <span data-i18n="safetyPillar1Title">1. No Diagnosis & No Prescriptions</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed" data-i18n="safetyPillar1Desc">
+                MediBridge AI is designed solely for health literacy. It empowers patients with clear communication tools for discussions with licensed physicians. It cannot replace clinical judgment.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="font-bold text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                <span>🔒</span>
+                <span data-i18n="safetyPillar2Title">2. Zero-Retention Client Privacy</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed" data-i18n="safetyPillar2Desc">
+                All document text and medical prompts run locally in your web browser. We do not store, profile, or sell your protected personal health information.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="font-bold text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                <span>🩺</span>
+                <span data-i18n="safetyPillar3Title">3. Red-Flag Emergency Protocols</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed" data-i18n="safetyPillar3Desc">
+                Our systems actively detect words related to cardiac, respiratory, or neurologic emergencies to direct users to emergency services without delay.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================================
+         SECTION 2: MEDICAL INFORMATION SIMPLIFIER
+         ========================================================================= -->
+    <section id="section-simplifier" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-6">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-2">
+            <span>📖</span> Jargon Buster
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="simplifierTitle">Medical Information Simplifier</h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1" data-i18n="simplifierSubtitle">
+            Type a medical phrase or click a quick term below to convert clinical jargon into plain words.
+          </p>
+        </div>
+
+        <!-- Quick Select Pills -->
+        <div class="mb-5 p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5" data-i18n="quickTermsLabel">
+            Quick-select frequent medical terms:
+          </label>
+          <div id="quick-terms-container" class="flex flex-wrap gap-1.5">
+            <!-- Dynamically populated chips -->
+          </div>
+        </div>
+
+        <!-- Input Box & Controls -->
+        <div class="mb-6 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div class="mb-3">
+            <textarea id="simplifier-input" rows="3" class="w-full p-3.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:outline-none transition resize-none placeholder-slate-400" placeholder="Type or paste a medical term or statement here (e.g. 'Patient has asymptomatic essential hypertension with postprandial hyperglycemia')..." data-i18n-placeholder="inputPlaceholder"></textarea>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+            <!-- Reading Level Switcher -->
+            <div class="flex items-center gap-1.5 text-xs text-slate-600">
+              <span class="font-semibold" data-i18n="readingLevelLabel">Reading Level:</span>
+              <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+                <button type="button" class="reading-level-btn px-2.5 py-1 rounded-md text-xs font-medium transition active-level" data-level="easy" data-i18n="levelEasy">5th Grade (Simple)</button>
+                <button type="button" class="reading-level-btn px-2.5 py-1 rounded-md text-xs font-medium transition" data-level="standard" data-i18n="levelStandard">Standard Guide</button>
+                <button type="button" class="reading-level-btn px-2.5 py-1 rounded-md text-xs font-medium transition" data-level="detailed" data-i18n="levelDetailed">Detailed</button>
+              </div>
+            </div>
+
+            <!-- Action Buttons: Voice, Reset, Simplify -->
+            <div class="flex items-center gap-2">
+              <button type="button" id="voice-simplifier-btn" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition shrink-0" title="Voice Input (Speech-to-Text)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                </svg>
+              </button>
+              <button type="button" id="clear-simplifier-btn" class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition" title="Clear input">
+                ↺ Reset
+              </button>
+              <button type="button" id="simplify-btn" class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5">
+                <span>✨</span>
+                <span data-i18n="simplifyBtn">Simplify in Plain English</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result Card -->
+        <div id="simplifier-result-card" class="hidden rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+          
+          <div class="bg-gradient-to-r from-primary-700 to-teal-800 text-white p-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span id="result-category-badge" class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white/20 text-white mb-1">Cardiovascular</span>
+              <h3 id="result-term-title" class="text-xl sm:text-2xl font-bold">Hypertension</h3>
+              <p id="result-simple-name" class="text-xs sm:text-sm text-primary-100">High Blood Pressure</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" id="listen-simplifier-btn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1 transition" title="Listen aloud">
+                <span>🔊</span> <span data-i18n="listenBtn">Listen Aloud</span>
+              </button>
+              <button type="button" id="copy-simplifier-btn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1 transition" title="Copy to clipboard">
+                <span>📋</span> <span data-i18n="copyBtn">Copy Text</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6 space-y-6">
+            
+            <!-- Side-by-Side Verification: Original Text vs Simplified -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1">
+                <span>🔍</span> <span>Original Medical Input Preserved:</span>
+              </span>
+              <p id="result-original-comparison" class="font-mono text-xs text-slate-800 bg-white p-2.5 rounded-lg border border-slate-200 break-words">
+                Original text will appear here.
+              </p>
+            </div>
+
+            <!-- What it means & Common Name -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-primary-800 mb-1.5 flex items-center gap-1.5">
+                <span>💡</span> <span data-i18n="resultWhatItMeans">What This Means in Plain Words</span>
+              </h4>
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                <p id="result-what-it-means" class="text-sm text-slate-700 leading-relaxed">
+                  Explanation will appear here.
+                </p>
+                <div id="result-common-name-container" class="pt-3 border-t border-slate-200/80 flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                    <span>🏷️</span> <span data-i18n="resultCommonNameLabel">Common Everyday Name:</span>
+                  </span>
+                  <span id="result-common-name-badge" class="px-3 py-1 text-xs sm:text-sm font-bold rounded-lg bg-teal-100 text-teal-900 border border-teal-300 shadow-2xs">
+                    Common Name
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Analogy -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-1.5 flex items-center gap-1.5">
+                <span>🎨</span> <span data-i18n="resultAnalogy">Everyday Real-World Analogy</span>
+              </h4>
+              <p id="result-analogy" class="text-sm text-slate-700 leading-relaxed bg-teal-50/50 p-4 rounded-xl border border-teal-100 italic">
+                Analogy will appear here.
+              </p>
+            </div>
+
+            <!-- Why Doctors Care -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-1.5 flex items-center gap-1.5">
+                <span>🩺</span> <span data-i18n="resultWhyChecked">Why Doctors Check or Care About This</span>
+              </h4>
+              <p id="result-why-checked" class="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                Reason will appear here.
+              </p>
+            </div>
+
+            <!-- Doctor Questions & Add to Checklist -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-primary-900 flex items-center gap-1.5">
+                  <span>💬</span> <span data-i18n="resultDoctorQuestions">Questions to Ask Your Doctor</span>
+                </h4>
+                <button type="button" id="add-to-checklist-simplifier-btn" class="px-3 py-1 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-800 border border-primary-200 font-semibold text-xs flex items-center gap-1 transition shadow-2xs">
+                  <span>➕</span> <span>Add to Doctor Checklist</span>
+                </button>
+              </div>
+              <ul id="result-doctor-questions" class="space-y-2">
+                <!-- Injected questions -->
+              </ul>
+            </div>
+
+            <!-- Optional Bilingual Card -->
+            <div id="simplifier-bilingual-block" class="hidden p-4 rounded-xl bg-primary-50/70 border border-primary-200">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-primary-900 flex items-center gap-1">
+                  <span>🌐</span> <span>Translated Explanation (<span id="bilingual-lang-name">Language</span>)</span>
+                </span>
+                <span class="text-[10px] text-primary-700 font-semibold px-2 py-0.5 rounded-full bg-primary-200">Bilingual View</span>
+              </div>
+              <p id="bilingual-translated-text" class="text-sm text-primary-950 leading-relaxed"></p>
+            </div>
+
+            <!-- Safety Footer -->
+            <div class="pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-1.5">
+              <span>🛡️</span>
+              <span>Educational explanation only. Never use to self-treat or replace a doctor's examination.</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="simplifier-empty-state" class="text-center py-12 px-4 rounded-2xl bg-white border border-dashed border-slate-300">
+          <div class="text-4xl mb-3">🩺</div>
+          <h3 class="font-bold text-slate-800 text-base mb-1">Ready to simplify medical terminology</h3>
+          <p class="text-xs text-slate-500 max-w-md mx-auto">
+            Click any term in the quick-select bar above, or paste text from a clinic note to get an instant, plain-English breakdown with analogies.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================================
+         SECTION 3: DOCUMENT / TEXT EXPLAINER
+         ========================================================================= -->
+    <section id="section-explainer" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-semibold mb-2">
+              <span>📑</span> Clinical Document Decoder
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="explainerTitle">Document & Report Explainer</h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1" data-i18n="explainerSubtitle">
+              Load a realistic clinical sample or paste your own lab test, radiology report, or discharge instructions.
+            </p>
+          </div>
+          <button type="button" id="print-doc-btn" class="self-start sm:self-center px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition border border-slate-300 flex items-center gap-1.5 shadow-2xs">
+            <span>🖨️</span> <span data-i18n="exportPrintBtn">Print / Export Summary</span>
+          </button>
+        </div>
+
+        <!-- Sample Document Bar -->
+        <div class="mb-5 p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5" data-i18n="sampleSelectorLabel">
+            Explore realistic sample documents:
+          </label>
+          <div id="sample-pills-container" class="flex flex-wrap gap-2">
+            <!-- Sample pills dynamically inserted -->
+          </div>
+        </div>
+
+        <!-- File Upload / Dropzone & Text Area -->
+        <div class="mb-8 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          
+          <div id="explainer-dropzone" class="border-2 border-dashed border-slate-300 hover:border-teal-400 rounded-xl p-4 text-center cursor-pointer transition mb-4 bg-slate-50/50">
+            <input type="file" id="explainer-file-input" class="hidden" accept=".txt,.pdf,image/*">
+            <span class="text-2xl">📁</span>
+            <div class="text-xs font-semibold text-slate-700 mt-1" data-i18n="uploadLabel">
+              Drop or click to select a clinical document (.txt, sample PDF, image preview)
+            </div>
+            <div class="text-[11px] text-slate-400">Processed 100% locally in your browser for privacy</div>
+          </div>
+
+          <textarea id="explainer-textarea" rows="7" class="w-full p-3.5 text-xs sm:text-sm font-mono rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none transition resize-none placeholder-slate-400" placeholder="Paste your clinical report or discharge text here..." data-i18n-placeholder="uploadPlaceholder"></textarea>
+
+          <div class="mt-4 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">🔒 Confidential local processing</span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="clear-doc-btn" class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition" title="Clear document text">
+                ↺ Clear
+              </button>
+              <button type="button" id="analyze-doc-btn" class="px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition flex items-center gap-2">
+                <span>🔍</span>
+                <span data-i18n="analyzeBtn">Analyze & Explain Document</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explainer Error / Validation Card -->
+        <div id="explainer-error-card" class="hidden mb-6 p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-xs">
+          <div class="flex items-start gap-3">
+            <span id="explainer-error-icon" class="text-2xl shrink-0">⚠️</span>
+            <div class="space-y-2 flex-grow">
+              <h3 id="explainer-error-title" class="text-base font-bold text-amber-950">Medical Content Not Detected</h3>
+              <p id="explainer-error-message" class="text-xs sm:text-sm text-amber-900 leading-relaxed">
+                Unable to analyze this document. The uploaded file does not appear to contain relevant medical information. Please upload a medical report, prescription, lab result, or other healthcare document.
+              </p>
+              <div class="pt-2 flex flex-wrap gap-2">
+                <button type="button" id="explainer-try-sample-btn" class="px-3.5 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs transition shadow-2xs flex items-center gap-1.5">
+                  <span>🧪</span> <span>Try a Sample Lab Report</span>
+                </button>
+                <button type="button" id="explainer-reupload-btn" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-xs transition shadow-2xs flex items-center gap-1.5">
+                  <span>📁</span> <span>Upload Another Document</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explainer Results Area -->
+        <div id="explainer-results-area" class="hidden space-y-6">
+
+          <!-- Printable Header (Visible only when printing) -->
+          <div class="print-only-header hidden">
+            <h1>MediBridge AI - Patient Medical Summary Handout</h1>
+            <p>Generated for health literacy and doctor consultation. Not a medical diagnosis.</p>
+          </div>
+
+          <!-- Executive Summary Card -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <div class="flex items-center gap-2 mb-3">
+              <span id="doc-badge-icon" class="text-xl">🧪</span>
+              <span id="doc-badge-title" class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800">Laboratory Blood Panel</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2" data-i18n="docSummaryTitle">Executive Plain-Language Summary</h3>
+            <p id="doc-plain-summary" class="text-sm text-slate-700 leading-relaxed bg-teal-50/40 p-4 rounded-xl border border-teal-100">
+              Document summary will appear here.
+            </p>
+
+            <!-- Bilingual Document Card -->
+            <div id="doc-bilingual-block" class="hidden mt-4 p-4 rounded-xl bg-primary-50/70 border border-primary-200">
+              <div class="text-xs font-bold text-primary-900 mb-1 flex items-center gap-1.5">
+                <span>🌐</span> <span>Translated Summary (<span id="doc-bilingual-lang-name">Language</span>)</span>
+              </div>
+              <p id="doc-bilingual-summary" class="text-sm text-primary-950 leading-relaxed"></p>
+            </div>
+          </div>
+
+          <!-- Key Findings Table -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <h3 class="text-lg font-bold text-slate-900 mb-1" data-i18n="keyFindingsTitle">Key Test Findings & Reference Ranges</h3>
+            <p class="text-xs text-slate-500 mb-3">Values extracted from your document with educational context</p>
+            
+            <!-- Reference Range Disclaimer Callout -->
+            <div class="mb-4 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+              <span class="text-base shrink-0">⚠️</span>
+              <p class="leading-relaxed">
+                <strong>Important Note on Reference Ranges:</strong> Laboratory reference ranges vary across different clinics, testing instruments, patient age, and measurement protocols. Isolated out-of-range numbers do NOT constitute a diagnosis; your physician evaluates your overall clinical picture and trends.
+              </p>
+            </div>
+
+            <div id="doc-key-findings-list" class="space-y-3">
+              <!-- Key findings injected -->
+            </div>
+          </div>
+
+          <!-- Shorthand Decoder Grid -->
+          <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <h3 class="text-lg font-bold text-slate-900 mb-1" data-i18n="shorthandTitle">Medical Shorthand & Abbreviations Decoded</h3>
+            <p class="text-xs text-slate-500 mb-4">Common Latin phrases and clinical acronyms translated into English</p>
+            <div id="doc-shorthand-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <!-- Shorthand items injected -->
+            </div>
+          </div>
+
+          <!-- Doctor Visit Checklist -->
+          <div class="p-6 rounded-2xl bg-teal-900 text-white shadow-md">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">📋</span>
+                <h3 class="text-lg font-bold" data-i18n="questionsTitle">Your Doctor Visit Discussion Checklist</h3>
+              </div>
+              <button type="button" id="add-to-checklist-doc-btn" class="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-teal-800 hover:bg-teal-700 text-white border border-teal-600 font-semibold text-xs flex items-center gap-1.5 transition shadow-2xs">
+                <span>➕</span> <span>Import to Action Checklist</span>
+              </button>
+            </div>
+            <p class="text-xs text-teal-200 mb-4">Print or save these questions to discuss with your doctor during your next appointment:</p>
+            <div id="doc-questions-container" class="space-y-2.5">
+              <!-- Questions injected -->
+            </div>
+          </div>
+
+          <!-- Disclaimer footer -->
+          <div class="text-center text-xs text-slate-400 p-3">
+            <span>🛡️ Educational analysis only. Do not stop or alter prescribed medications without consulting your doctor.</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 3.5: NEARBY HOSPITALS & EMERGENCY CONTACTS
+         ========================================================================= -->
+    <section id="section-hospitals" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Section Header -->
+        <div class="mb-8 text-center max-w-3xl mx-auto">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold mb-2">
+            <span>🏥</span> Healthcare Access & Verified Locations
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" data-i18n="hospitalsTitle">Nearby Hospitals & Emergency Contacts</h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed" data-i18n="hospitalsSubtitle">
+            Find nearby hospitals, view verified contact details, and access emergency contact information based on your location.
+          </p>
+        </div>
+
+        <!-- 1. Dedicated Emergency Warning Section -->
+        <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-6 shadow-md border border-red-500">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl animate-pulse">🚨</span>
+                <h3 class="font-extrabold text-lg sm:text-xl tracking-tight text-white" data-i18n="hospitalsEmergencyBannerTitle">
+                  Life-Threatening Medical Emergency?
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm text-red-100 leading-relaxed max-w-2xl" data-i18n="hospitalsEmergencyBannerText">
+                If you or someone nearby is experiencing acute chest pain, signs of stroke (FAST), difficulty breathing, or severe trauma, call emergency services immediately. <strong>Do NOT wait for hospital listings to load.</strong>
+              </p>
+            </div>
+            <div class="shrink-0 flex flex-wrap items-center gap-3">
+              <a href="tel:112" class="px-5 py-3 rounded-xl bg-white text-red-700 hover:bg-red-50 font-extrabold text-sm shadow-md transition flex items-center gap-2" data-i18n="hospitalsCallEmergencyBtn">
+                <span>📞</span> <span>Call Emergency Services (112)</span>
+              </a>
+              <a href="tel:108" class="px-4 py-3 rounded-xl bg-red-900/60 hover:bg-red-900 text-white border border-red-400/50 font-bold text-xs transition flex items-center gap-1.5" title="Ambulance Services">
+                <span>🚑</span> <span>Ambulance (108)</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Location Selection Card -->
+        <div class="mb-8 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+            
+            <!-- Option A: Current Location GPS -->
+            <div class="w-full lg:w-1/2 space-y-2">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <span>📍</span> <span>Option A: Use Device Location</span>
+              </h3>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Automatically locate healthcare facilities near your current position via browser Geolocation.
+              </p>
+              <div class="pt-1 flex items-center gap-3">
+                <button type="button" id="hospital-use-gps-btn" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition flex items-center gap-2">
+                  <span id="hospital-gps-icon">📍</span>
+                  <span id="hospital-gps-label" data-i18n="hospitalsUseGps">Use My Current Location</span>
+                </button>
+                <span class="text-[11px] text-slate-400 italic">Explicit permission required</span>
+              </div>
+            </div>
+
+            <!-- Option B: Manual Search -->
+            <div class="w-full lg:w-1/2 space-y-2">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <span>🔍</span> <span data-i18n="hospitalsManualLabel">Option B: Enter Location Manually</span>
+              </h3>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Enter any city, locality, area name, or 6-digit postal PIN code.
+              </p>
+              <div class="flex items-center gap-2">
+                <input type="text" id="hospital-manual-input" class="flex-grow p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-rose-500 focus:outline-none transition placeholder-slate-400" placeholder="e.g. Bengaluru, Mumbai, 560001, Parel, Connaught Place...">
+                <button type="button" id="hospital-manual-search-btn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs transition shrink-0" data-i18n="hospitalsSearchBtn">
+                  Search
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Suggestion Chips & Radius Selector -->
+          <div class="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            
+            <!-- Preset Location Chips -->
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <span class="text-[11px] font-semibold text-slate-500 mr-1">Quick Cities:</span>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Bengaluru">Bengaluru</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Mumbai">Mumbai</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Delhi">Delhi</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Hyderabad">Hyderabad</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Chennai">Chennai</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Kolkata">Kolkata</button>
+              <button type="button" class="hospital-preset-chip px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition" data-query="Pune">Pune</button>
+            </div>
+
+            <!-- Radius Filter -->
+            <div class="flex items-center gap-2 text-xs shrink-0">
+              <span class="font-semibold text-slate-600" data-i18n="hospitalsRadiusLabel">Search Radius:</span>
+              <select id="hospital-radius-select" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
+                <option value="5" selected>5 km (Default)</option>
+                <option value="10">10 km</option>
+                <option value="25">25 km (Expanded)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Active Location Feedback Banner -->
+          <div id="hospital-active-location-banner" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-950 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+              <span>Active Target: <strong id="hospital-active-target-text">Searching...</strong></span>
+            </div>
+            <span class="text-[11px] text-rose-700 font-medium" id="hospital-active-source-badge">Live Geocoding</span>
+          </div>
+
+        </div>
+
+        <!-- 3. Results Section -->
+        <div>
+          
+          <!-- Loading State -->
+          <div id="hospital-loading-state" class="hidden text-center py-16" aria-live="polite">
+            <div class="inline-block w-8 h-8 border-4 border-rose-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <h4 class="font-bold text-slate-800 text-sm">Searching nearby hospitals...</h4>
+            <p class="text-xs text-slate-500 mt-1">Querying OpenStreetMap and verified healthcare directories</p>
+          </div>
+
+          <!-- Results Header & Summary -->
+          <div id="hospital-results-header" class="hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+              <span id="hospital-count-badge" class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-bold">0 Hospitals Found</span>
+              <span class="text-xs text-slate-600 font-medium" id="hospital-distance-mode-text">Sorted by distance</span>
+            </div>
+            <div class="text-[11px] text-slate-500 flex items-center gap-2">
+              <span data-i18n="hospitalsApproxDistNote">Distances are approximate straight-line estimates.</span>
+            </div>
+          </div>
+
+          <!-- Hospital Cards Grid -->
+          <div id="hospital-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically injected hospital cards -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="hospital-empty-state" class="hidden text-center py-16 p-8 rounded-2xl bg-white border border-dashed border-slate-300">
+            <div class="text-4xl mb-3">🏥</div>
+            <h4 class="font-bold text-slate-900 text-base" data-i18n="hospitalsNoResultsTitle">No Hospitals Found Within Selected Radius</h4>
+            <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-5" data-i18n="hospitalsNoResultsDesc">
+              We couldn't find hospitals within this radius. Try expanding your search to 10 km or 25 km, or choose one of our quick city presets.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+              <button type="button" id="hospital-retry-expand-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition" data-i18n="hospitalsExpandRadiusBtn">
+                Expand to 25 km
+              </button>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div id="hospital-error-state" class="hidden text-center py-12 p-6 rounded-2xl bg-red-50 border border-red-200 text-red-900 space-y-3">
+            <div class="text-3xl">⚠️</div>
+            <h4 class="font-bold text-sm" id="hospital-error-title">Location Search Error</h4>
+            <p class="text-xs text-red-700 max-w-md mx-auto" id="hospital-error-desc">
+              Unable to locate hospitals. Please check your network connection or enter a city name manually.
+            </p>
+            <div class="pt-2">
+              <button type="button" id="hospital-error-retry-btn" class="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white font-semibold text-xs">
+                Retry Search
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================================
+         SECTION 4: LANGUAGE SELECTION HUB
+         ========================================================================= -->
+    <section id="section-language" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-8 text-center max-w-2xl mx-auto">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-semibold mb-2">
+            <span>🌐</span> Multi-Language Accessibility
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="langHubTitle">Language Selection & Bilingual View</h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-2" data-i18n="langHubSubtitle">
+            Choose your preferred language. MediBridge adapts both the interface and the medical explanations.
+          </p>
+        </div>
+
+        <!-- Bilingual Dual-View Toggle -->
+        <div class="mb-8 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <span>👥</span>
+              <span data-i18n="dualViewToggle">Enable Bilingual Side-by-Side View (English + Your Language)</span>
+            </div>
+            <p class="text-xs text-slate-500" data-i18n="dualViewDesc">
+              Perfect for taking to doctors' appointments so you and English-speaking clinicians can read together.
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <input type="checkbox" id="bilingual-toggle" class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+          </label>
+        </div>
+
+        <!-- Language Cards Grid -->
+        <div class="mb-8">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4" data-i18n="selectLangPrompt">
+            Select your preferred primary language:
+          </h3>
+          <div id="language-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+            <!-- Language cards rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Inclusion Note -->
+        <div class="p-4 rounded-xl bg-sky-50 border border-sky-100 text-xs text-sky-900 flex items-start gap-3">
+          <span class="text-xl shrink-0">💡</span>
+          <p class="leading-relaxed">
+            <strong>Why Multi-Language Healthcare Matters:</strong> Over 25 million people in the United States and hundreds of millions globally have Limited English Proficiency (LEP). Providing culturally tailored, plain-language translations significantly reduces medical misunderstandings and hospital readmissions.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =========================================================================
+         SECTION 5: HEALTH ASSISTANT (CONVERSATIONAL AI WITH GUARDRAILS)
+         ========================================================================= -->
+    <section id="section-assistant" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold mb-2">
+              <span>💬</span> Guardrailed Chat
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="assistantTitle">Educational Health Assistant</h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1" data-i18n="assistantSubtitle">
+              Ask health education questions, understand procedures, and prepare for doctor visits with built-in safety guardrails.
+            </p>
+          </div>
+          <button type="button" id="new-chat-btn" class="self-start sm:self-center px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition border border-slate-300 flex items-center gap-1.5 shadow-2xs shrink-0" title="Start a fresh conversation">
+            <span>✨</span> <span>New Chat</span>
+          </button>
+        </div>
+
+        <!-- Guardrail Warning Callout -->
+        <div class="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span>🛡️</span>
+            <span data-i18n="assistantDisclaimer">Strict Guardrail: This assistant cannot diagnose diseases, predict medical outcomes, or prescribe medications.</span>
+          </div>
+          <button type="button" class="open-safety-modal-btn font-semibold underline text-[11px] shrink-0">Policy</button>
+        </div>
+
+        <!-- Sample Prompt Chips -->
+        <div class="mb-4">
+          <span class="text-xs font-bold text-slate-600 block mb-2" data-i18n="samplePromptsLabel">Try asking:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-primary-50 hover:text-primary-800 transition" data-prompt="What does a fasting blood glucose test mean in simple terms?">
+              🩸 What does fasting glucose mean?
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-primary-50 hover:text-primary-800 transition" data-prompt="What should I ask my doctor about high blood pressure?">
+              ❤️ Questions for high blood pressure
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-primary-50 hover:text-primary-800 transition" data-prompt="Explain the difference between an X-Ray, CT scan, and MRI scan.">
+              🩻 X-Ray vs CT vs MRI differences
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-primary-50 hover:text-primary-800 transition" data-prompt="What is the difference between generic and brand-name medications?">
+              💊 Generic vs Brand-name medicines
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 transition font-medium" data-prompt="I have sudden crushing chest pain and feel breathless.">
+              🚨 Chest pain emergency (Demo Safety Alert)
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition font-medium" data-prompt="Can you diagnose if this rash on my leg is an infection?">
+              🛡️ Diagnose my rash (Demo Refusal Guardrail)
+            </button>
+            <button type="button" class="prompt-pill text-xs px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition font-medium" data-prompt="How many mg of antibiotic should I take for a toothache?">
+              🛡️ How many mg to take (Demo Refusal Guardrail)
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col h-[520px]">
+          
+          <!-- Chat Message Area -->
+          <div id="chat-messages-container" class="flex-grow p-4 md:p-6 overflow-y-auto space-y-3 bg-slate-50/50">
+            <!-- Chat messages dynamically rendered -->
+          </div>
+
+          <!-- Chat Input Controls -->
+          <div class="p-3 md:p-4 bg-white border-t border-slate-200 rounded-b-2xl">
+            <div class="flex items-center gap-2">
+              
+              <!-- Voice Recognition Microphone -->
+              <button type="button" id="voice-input-btn" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition shrink-0" title="Voice Input (Speech-to-Text)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                </svg>
+              </button>
+
+              <textarea id="chat-input" rows="1" class="flex-grow p-3 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:outline-none transition resize-none max-h-32" placeholder="Ask a health literacy question (e.g., 'What does fasting glucose mean?')..." data-i18n-placeholder="chatPlaceholder"></textarea>
+
+              <button type="button" id="send-chat-btn" class="px-5 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs sm:text-sm transition shrink-0 flex items-center gap-1.5 shadow-xs">
+                <span data-i18n="sendBtn">Send</span>
+              </button>
+
+              <button type="button" id="clear-chat-btn" class="p-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-500 transition shrink-0 text-xs" title="Clear chat history">
+                <span data-i18n="clearChatBtn">Clear</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 6: PATIENT-FRIENDLY ACTION CHECKLIST
+         ========================================================================= -->
+    <section id="section-checklist" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold mb-2">
+              <span>📋</span> Appointment Preparation
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="checklistTitle">Patient-Friendly Action Checklist</h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1" data-i18n="checklistSubtitle">
+              Prepare questions, clarify terminology, organize follow-ups, and keep consultation notes before seeing your doctor.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="print-checklist-btn" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition flex items-center gap-1.5 shadow-2xs">
+              <span>🖨️</span> <span data-i18n="printChecklistBtn">Print Checklist</span>
+            </button>
+            <button type="button" id="export-checklist-btn" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition flex items-center gap-1.5 shadow-2xs">
+              <span>💾</span> <span data-i18n="exportChecklistBtn">Export Text</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add New Item Card -->
+        <div class="mb-6 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
+            <span>➕</span> <span>Add Item to Checklist</span>
+          </h3>
+          <div class="flex flex-col sm:flex-row items-stretch gap-2.5">
+            <input type="text" id="new-checklist-text" class="flex-grow p-3 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:outline-none transition" placeholder="e.g. Ask doctor whether this medication should be taken with meals..." data-i18n-placeholder="checklistPlaceholder">
+            
+            <select id="new-checklist-category" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+              <option value="doctor">💬 Question for Doctor</option>
+              <option value="terms">📖 Term to Clarify</option>
+              <option value="tasks">✅ Follow-up Task</option>
+              <option value="notes">📝 Caregiver Note</option>
+            </select>
+
+            <button type="button" id="add-checklist-btn" class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition whitespace-nowrap">
+              Add Item
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Stats Bar -->
+        <div class="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200 text-xs">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="font-bold text-slate-500 mr-1">Filter:</span>
+            <button type="button" class="checklist-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-primary-600 text-white text-xs" data-filter="all">All (<span id="count-all">0</span>)</button>
+            <button type="button" class="checklist-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs" data-filter="doctor">Questions</button>
+            <button type="button" class="checklist-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs" data-filter="terms">Terms</button>
+            <button type="button" class="checklist-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs" data-filter="tasks">Tasks</button>
+            <button type="button" class="checklist-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs" data-filter="notes">Notes</button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span id="checklist-progress-text" class="text-slate-500 font-medium">0 of 0 completed</span>
+            <button type="button" id="clear-completed-checklist-btn" class="text-slate-400 hover:text-red-600 font-semibold text-xs transition">Clear Done</button>
+            <button type="button" id="reset-default-checklist-btn" class="text-slate-400 hover:text-primary-700 font-semibold text-xs transition">Reset Defaults</button>
+          </div>
+        </div>
+
+        <!-- Checklist List Container -->
+        <div id="checklist-items-container" class="space-y-2.5">
+          <!-- Dynamically populated checklist items -->
+        </div>
+
+        <!-- Educational distinction note -->
+        <div class="mt-6 p-4 rounded-xl bg-teal-50 border border-teal-100 text-xs text-teal-900 flex items-start gap-2.5">
+          <span class="text-lg shrink-0">💡</span>
+          <p class="leading-relaxed">
+            <strong>Patient Consultation Guidance:</strong> These checklist items are educational tools to help you communicate clearly and confidently with your physician. MediBridge AI does not prescribe medical tasks, lab investigations, or treatment decisions.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 7: HEALTHCARE ACCESS NAVIGATOR
+         ========================================================================= -->
+    <section id="section-navigator" class="app-section hidden py-8 md:py-12">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold mb-2">
+              <span>🏥</span> Verified Public Resources
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900" data-i18n="navigatorTitle">Healthcare Access Navigator</h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1" data-i18n="navigatorSubtitle">
+              Find verified regional emergency hotlines, government tertiary hospitals, and official healthcare schemes.
+            </p>
+          </div>
+          
+          <!-- State Selection & Geolocation -->
+          <div class="flex items-center gap-2">
+            <button type="button" id="detect-location-btn" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition flex items-center gap-1 shadow-2xs" title="Auto-detect state using browser location">
+              <span>📍</span> <span>Detect My State</span>
+            </button>
+            <select id="navigator-state-select" class="bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-xl px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none cursor-pointer shadow-2xs">
+              <option value="karnataka">Karnataka (KA)</option>
+              <option value="maharashtra">Maharashtra (MH)</option>
+              <option value="andhra_pradesh">Andhra Pradesh (AP)</option>
+              <option value="telangana">Telangana (TG)</option>
+              <option value="tamil_nadu">Tamil Nadu (TN)</option>
+              <option value="kerala">Kerala (KL)</option>
+              <option value="delhi">Delhi NCR (DL)</option>
+              <option value="gujarat">Gujarat (GJ)</option>
+              <option value="west_bengal">West Bengal (WB)</option>
+              <option value="national_india">All India (National)</option>
+              <option value="international_us">International (US/Global)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Emergency Hotlines Grid for Selected Region -->
+        <div class="mb-8 p-6 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border border-red-200 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🚨</span>
+              <h3 class="font-bold text-red-950 text-base" id="navigator-region-title">Regional Emergency Numbers (Karnataka)</h3>
+            </div>
+            <span class="text-[11px] font-semibold text-red-700 bg-red-100 px-2.5 py-0.5 rounded-full border border-red-200">24x7 Verified Official</span>
+          </div>
+
+          <div id="navigator-helpline-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated hotlines with clickable tel: links -->
+          </div>
+        </div>
+
+        <!-- Tertiary Public Hospitals & Medical Colleges -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                <span>🏥</span> <span>Major Public Hospitals & Apex Centers</span>
+              </h3>
+              <p class="text-xs text-slate-500">Government tertiary referral hospitals with emergency care and subsidized treatment</p>
+            </div>
+            <span class="text-xs text-slate-400 font-medium">Updated 2026 Directory</span>
+          </div>
+
+          <div id="navigator-hospitals-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically populated hospital cards -->
+          </div>
+        </div>
+
+        <!-- Government Schemes & Digital Health Portals -->
+        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                <span>🏛️</span> <span>Official Health Schemes & Digital Portals</span>
+              </h3>
+              <p class="text-xs text-slate-500">Government insurance coverage and free online teleconsultations</p>
+            </div>
+          </div>
+
+          <div id="navigator-schemes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <!-- Dynamically populated schemes -->
+          </div>
+        </div>
+
+        <!-- Verification Disclaimer -->
+        <div class="mt-6 p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs flex items-start gap-2.5">
+          <span class="text-base shrink-0">🛡️</span>
+          <p class="leading-relaxed">
+            <strong>Source & Verification Notice:</strong> Helplines (108 Ambulance, 104 Tele-Health, 112 Unified Emergency, 14416 Tele-MANAS) are sourced from official state health department directories and Ministry of Health and Family Welfare (MoHFW) notices. Always dial your local emergency services directly during an acute crisis.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       SAFETY & ETHICS MODAL
+       ========================================================================= -->
+  <div id="safety-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🛡️</span>
+          <h3 class="text-xl font-bold text-slate-900" data-i18n="safetyModalTitle">Medical Safety & Privacy Pledge</h3>
+        </div>
+        <button type="button" id="close-safety-modal-btn" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4 text-xs md:text-sm text-slate-700 leading-relaxed">
+        <div class="p-4 rounded-xl bg-red-50 border border-red-200">
+          <h4 class="font-bold text-red-900 mb-1">🚨 Emergency Protocol Notice</h4>
+          <p class="text-red-800">
+            MediBridge AI is not an emergency response system. If you or someone you are assisting has severe symptoms like crushing chest pain, difficulty breathing, sudden stroke-like weakness, or severe hemorrhage, call emergency medical services (911 / 112 / 108) immediately.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1" data-i18n="safetyPillar1Title">1. No Diagnosis & No Prescriptions</h4>
+          <p data-i18n="safetyPillar1Desc">
+            MediBridge AI is designed solely for health literacy. It empowers patients with clear communication tools for discussions with licensed physicians. It cannot replace clinical judgment.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1" data-i18n="safetyPillar2Title">2. Zero-Retention Client Privacy</h4>
+          <p data-i18n="safetyPillar2Desc">
+            All document text and medical prompts run locally in your web browser. We do not store, profile, or sell your protected personal health information.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 mb-1" data-i18n="safetyPillar3Title">3. Red-Flag Emergency Protocols</h4>
+          <p data-i18n="safetyPillar3Desc">
+            Our systems actively detect words related to cardiac, respiratory, or neurologic emergencies to direct users to emergency services without delay.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 text-right">
+        <button type="button" onclick="document.getElementById('safety-modal').classList.add('hidden')" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold hover:bg-slate-900 transition">
+          Close Window
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SETTINGS & OFFLINE MODAL
+       ========================================================================= -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Application Settings</h3>
+        <button type="button" id="close-settings-btn" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Optional Gemini API Key (Live LLM):</label>
+          <input type="password" id="api-key-input" class="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="AIzaSy...">
+          <p class="text-[11px] text-slate-400 mt-1">Leave empty to run in 100% offline standalone mode using built-in clinical engines.</p>
+        </div>
+
+        <div class="p-3 rounded-lg bg-teal-50 border border-teal-100 text-teal-800 text-[11px]">
+          <strong>Hackathon Note:</strong> The app is pre-loaded with realistic clinical datasets, laboratory references, and natural language decoders, so it works completely offline without needing any setup or dependencies!
+        </div>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" id="save-api-key-btn" class="px-4 py-2 rounded-xl bg-primary-600 text-white font-semibold text-xs hover:bg-primary-700 transition">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast -->
+  <div id="app-toast" class="hidden">Notification</div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-10 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 space-y-3">
+      <div class="flex items-center justify-center gap-2">
+        <span class="font-bold text-slate-800">MediBridge AI</span>
+        <span>•</span>
+        <span data-i18n="appTagline">Bridging complex medicine and everyday language</span>
+      </div>
+      <p class="max-w-2xl mx-auto text-[11px] text-slate-400 leading-relaxed">
+        MediBridge AI is an open accessibility project designed for hackathon demonstration. It provides health literacy aids and translation support. It does not provide medical advice, diagnosis, or clinical prescriptions. Always seek guidance from a qualified health provider.
+      </p>
+      <div class="flex items-center justify-center gap-4 pt-1">
+        <button type="button" class="open-safety-modal-btn underline hover:text-slate-800" data-i18n="navSafety">Safety & Privacy</button>
+        <span>•</span>
+        <a href="#simplifier" class="underline hover:text-slate-800" data-jump="simplifier">Simplifier</a>
+        <span>•</span>
+        <a href="#explainer" class="underline hover:text-slate-800" data-jump="explainer">Explainer</a>
+        <span>•</span>
+        <a href="#hospitals" class="underline hover:text-slate-800" data-jump="hospitals">Hospitals</a>
+        <span>•</span>
+        <a href="#assistant" class="underline hover:text-slate-800" data-jump="assistant">Assistant</a>
+      </div>
+      <div class="text-[11px] text-slate-400" data-i18n="footerCopyright">
+        © 2026 MediBridge AI • Hackathon Prototype for Accessible Healthcare. Built for informational empowerment.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="js/samples.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/simplifier.js"></script>
+  <script src="js/explainer.js"></script>
+  <script src="js/assistant.js"></script>
+  <script src="js/hospitals.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

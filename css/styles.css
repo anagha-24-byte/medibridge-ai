@@ -1,0 +1,317 @@
+/* ==========================================================================
+   MediBridge AI - Clinical & Accessible Stylesheet
+   ========================================================================== */
+
+:root {
+  --primary-50: #f0fdfa;
+  --primary-100: #ccfbf1;
+  --primary-200: #99f6e4;
+  --primary-300: #5eead4;
+  --primary-400: #2dd4bf;
+  --primary-500: #14b8a6;
+  --primary-600: #0d9488;
+  --primary-700: #0f766e;
+  --primary-800: #115e59;
+  --primary-900: #134e4a;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible focus outline */
+*:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+/* Navigation active indicator */
+.nav-link.active-nav {
+  color: #0f766e !important;
+  font-weight: 700;
+  border-bottom: 2.5px solid #0d9488;
+}
+
+/* Reading level buttons */
+.reading-level-btn.active-level {
+  background-color: #0d9488 !important;
+  color: #ffffff !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.3);
+}
+
+/* RTL Layout support for Arabic */
+body.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+body.rtl-layout .flex-row-reverse-rtl {
+  flex-direction: row-reverse;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toast notifications */
+#app-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  padding: 12px 20px;
+  background-color: #0f172a;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+#app-toast.toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Chat bubble markdown styling */
+.chat-markdown-content strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.chat-markdown-content em {
+  font-style: italic;
+  color: #475569;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   Accessibility: Font Scaling & High Contrast Mode (WCAG AAA)
+   ========================================================================== */
+body.font-scale-sm { font-size: 14px; }
+body.font-scale-md { font-size: 16px; }
+body.font-scale-lg { font-size: 18px; }
+body.font-scale-xl { font-size: 20px; }
+
+body.font-scale-lg h1 { font-size: 2.5rem !important; }
+body.font-scale-lg h2 { font-size: 2rem !important; }
+body.font-scale-lg h3 { font-size: 1.5rem !important; }
+body.font-scale-lg p, body.font-scale-lg span, body.font-scale-lg li, body.font-scale-lg button { font-size: 1.05rem !important; }
+
+body.font-scale-xl h1 { font-size: 2.85rem !important; }
+body.font-scale-xl h2 { font-size: 2.25rem !important; }
+body.font-scale-xl h3 { font-size: 1.75rem !important; }
+body.font-scale-xl p, body.font-scale-xl span, body.font-scale-xl li, body.font-scale-xl button { font-size: 1.2rem !important; }
+
+/* High-Contrast Mode */
+body.high-contrast-mode {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast-mode header,
+body.high-contrast-mode footer,
+body.high-contrast-mode .bg-white,
+body.high-contrast-mode .bg-slate-50,
+body.high-contrast-mode .bg-slate-100,
+body.high-contrast-mode .bg-teal-50,
+body.high-contrast-mode .bg-teal-50\/40,
+body.high-contrast-mode .bg-teal-50\/50,
+body.high-contrast-mode .bg-primary-50,
+body.high-contrast-mode .bg-primary-50\/70,
+body.high-contrast-mode .bg-amber-50,
+body.high-contrast-mode .bg-rose-50,
+body.high-contrast-mode .bg-sky-50 {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+  border-color: #ffff00 !important;
+}
+
+body.high-contrast-mode p,
+body.high-contrast-mode span,
+body.high-contrast-mode h1,
+body.high-contrast-mode h2,
+body.high-contrast-mode h3,
+body.high-contrast-mode h4,
+body.high-contrast-mode h5,
+body.high-contrast-mode h6,
+body.high-contrast-mode li,
+body.high-contrast-mode label,
+body.high-contrast-mode div {
+  color: #ffffff !important;
+}
+
+body.high-contrast-mode a,
+body.high-contrast-mode .text-primary-700,
+body.high-contrast-mode .text-teal-700,
+body.high-contrast-mode .text-teal-800,
+body.high-contrast-mode .text-sky-700 {
+  color: #00ffff !important;
+  text-decoration: underline;
+}
+
+body.high-contrast-mode button,
+body.high-contrast-mode select,
+body.high-contrast-mode input,
+body.high-contrast-mode textarea {
+  border: 2px solid #ffff00 !important;
+  background-color: #1a1a1a !important;
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .bg-primary-600,
+body.high-contrast-mode .bg-primary-700,
+body.high-contrast-mode .bg-teal-600,
+body.high-contrast-mode .bg-teal-700,
+body.high-contrast-mode .bg-teal-900 {
+  background-color: #0f766e !important;
+  border: 2px solid #ffff00 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast-mode .border,
+body.high-contrast-mode .border-slate-200,
+body.high-contrast-mode .border-slate-300,
+body.high-contrast-mode .border-teal-200,
+body.high-contrast-mode .border-primary-200 {
+  border-color: #ffff00 !important;
+}
+
+/* ==========================================================================
+   Action Checklist & Healthcare Access Navigator
+   ========================================================================== */
+.checklist-item {
+  transition: all 0.2s ease;
+}
+
+.checklist-item.is-completed {
+  opacity: 0.65;
+  background-color: #f1f5f9;
+}
+
+.checklist-item.is-completed .checklist-title {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+.badge-doctor {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-terms {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-tasks {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-notes {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
+}
+
+/* ==========================================================================
+   Print Stylesheet - Professional Patient & Doctor Handout
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  header,
+  nav,
+  footer,
+  #safety-alert-banner,
+  #sample-pills-container,
+  #explainer-dropzone,
+  #explainer-textarea,
+  #analyze-doc-btn,
+  #print-doc-btn,
+  #app-toast,
+  .no-print {
+    display: none !important;
+  }
+
+  #section-explainer,
+  #section-checklist {
+    display: block !important;
+  }
+
+  #explainer-results-area,
+  #checklist-items-container {
+    display: block !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .print-only-header {
+    display: block !important;
+    border-bottom: 2px solid #000;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .print-only-header h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .print-disclaimer {
+    display: block !important;
+    margin-top: 24px;
+    padding: 10px;
+    border: 1px solid #999;
+    font-size: 9pt;
+    color: #333;
+  }
+}
