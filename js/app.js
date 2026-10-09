@@ -1298,15 +1298,50 @@ function initMediBridgeApp() {
     });
   });
 
-  function performSimplification(query) {
+  let currentSimplifierRequestId = 0;
+
+  async function performSimplification(query) {
     if (!query) query = simplifierInput ? simplifierInput.value.trim() : '';
     if (!query) {
       showToast("Please enter a medical term or sentence first.");
       return;
     }
 
+    const requestId = ++currentSimplifierRequestId;
     state.lastSimplifiedQuery = query;
-    const result = simplifier.simplifyText(query, state.currentLanguage);
+
+    // Show button loading state
+    const originalBtnText = simplifyBtn ? simplifyBtn.innerHTML : '';
+    if (simplifyBtn) {
+      simplifyBtn.disabled = true;
+      simplifyBtn.classList.add('opacity-75', 'cursor-wait');
+      simplifyBtn.innerHTML = `
+        <span class="inline-flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span>Verifying & Simplifying...</span>
+        </span>
+      `;
+    }
+
+    let result = null;
+    try {
+      result = await simplifier.simplifyTextAsync(query, state.currentLanguage, state.geminiApiKey || '');
+    } catch (err) {
+      console.error("Simplifier error:", err);
+      result = simplifier.simplifyText(query, state.currentLanguage);
+    } finally {
+      if (simplifyBtn) {
+        simplifyBtn.disabled = false;
+        simplifyBtn.classList.remove('opacity-75', 'cursor-wait');
+        simplifyBtn.innerHTML = originalBtnText;
+      }
+    }
+
+    // Guard against out-of-order async responses
+    if (requestId !== currentSimplifierRequestId) return;
     if (!result) return;
 
     if (simplifierEmptyState) simplifierEmptyState.classList.add('hidden');
@@ -1324,23 +1359,43 @@ function initMediBridgeApp() {
     state.currentSimplifierQuestions = result.doctorQuestions || [];
 
     // Render result card contents
-    document.getElementById('result-term-title').textContent = result.term;
-    document.getElementById('result-simple-name').textContent = result.simpleName;
-    document.getElementById('result-category-badge').textContent = result.category;
-    document.getElementById('result-what-it-means').innerHTML = result.whatItMeans;
-    document.getElementById('result-analogy').textContent = result.analogy;
-    document.getElementById('result-why-checked').textContent = result.whyChecked;
-
+    const termTitleEl = document.getElementById('result-term-title');
+    const simpleNameEl = document.getElementById('result-simple-name');
+    const categoryBadgeEl = document.getElementById('result-category-badge');
+    const whatItMeansEl = document.getElementById('result-what-it-means');
+    const analogyEl = document.getElementById('result-analogy');
+    const whyCheckedEl = document.getElementById('result-why-checked');
     const commonNameBadge = document.getElementById('result-common-name-badge');
+
+    if (termTitleEl) termTitleEl.textContent = result.term || query;
+    if (simpleNameEl) simpleNameEl.textContent = result.simpleName || result.term || query;
+    if (categoryBadgeEl) {
+      categoryBadgeEl.textContent = result.category || 'General';
+      if (result.success === false) {
+        categoryBadgeEl.className = 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/80 text-white mb-1';
+      } else {
+        categoryBadgeEl.className = 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-white/20 text-white mb-1';
+      }
+    }
+    if (whatItMeansEl) whatItMeansEl.innerHTML = result.whatItMeans;
+    if (analogyEl) analogyEl.textContent = result.analogy || 'Understanding medical terminology empowers you to make informed decisions with your doctor.';
+    if (whyCheckedEl) whyCheckedEl.textContent = result.whyChecked || 'Doctors evaluate this to ensure safe diagnosis and appropriate care.';
+
     if (commonNameBadge) {
-      commonNameBadge.textContent = result.commonName || result.simpleName;
+      commonNameBadge.textContent = result.commonName || result.simpleName || result.term;
     }
 
     // Render Doctor Questions
     const questionsList = document.getElementById('result-doctor-questions');
     if (questionsList) {
       questionsList.innerHTML = '';
-      result.doctorQuestions.forEach(q => {
+      const questionsToRender = (result.doctorQuestions && result.doctorQuestions.length > 0)
+        ? result.doctorQuestions
+        : (result.success === false
+          ? ["Check the spelling or try alternative common names for this term.", "Would you like to ask our Health Assistant for more context?"]
+          : ["How does this condition apply to my health?", "What are the recommended next steps?"]);
+
+      questionsToRender.forEach(q => {
         const li = document.createElement('li');
         li.className = 'flex items-start text-sm text-slate-700';
         li.innerHTML = `
@@ -1356,10 +1411,9 @@ function initMediBridgeApp() {
     if (bilingualBlock) {
       if (state.bilingualMode && state.currentLanguage !== 'en') {
         bilingualBlock.classList.remove('hidden');
-        const langObj = SUPPORTED_LANGUAGES.find(l => l.code === state.currentLanguage) || { native: state.currentLanguage };
         document.getElementById('bilingual-lang-name').textContent = "English Original Reference";
         const englishResult = simplifier.simplifyText(query, 'en');
-        document.getElementById('bilingual-translated-text').textContent = englishResult ? englishResult.whatItMeans : "";
+        document.getElementById('bilingual-translated-text').textContent = englishResult ? (englishResult.whatItMeans.replace(/<[^>]*>?/gm, '')) : "";
       } else {
         bilingualBlock.classList.add('hidden');
       }

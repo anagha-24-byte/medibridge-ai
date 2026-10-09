@@ -164,6 +164,103 @@ while ($listener.IsListening) {
         }
 
         # -------------------------------------------------------------
+        # API Route: /api/simplify (Strict Medical Simplifier Proxy)
+        # -------------------------------------------------------------
+        if ($urlPath -eq "api/simplify" -and $request.HttpMethod -eq "POST") {
+            $response.ContentType = "application/json; charset=utf-8"
+            
+            $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+            $body = $reader.ReadToEnd()
+            $reqData = $body | ConvertFrom-Json
+
+            $apiKey = $env:GEMINI_API_KEY
+            if (-not $apiKey -and $reqData.clientApiKey) {
+                $apiKey = $reqData.clientApiKey
+            }
+
+            if (-not $apiKey) {
+                $response.StatusCode = 400
+                $errPayload = @{
+                    success = $false
+                    error = "NO_API_KEY"
+                    message = "No Gemini API key configured on server. Falling back to local verified clinical knowledge base."
+                } | ConvertTo-Json
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($errPayload)
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                $response.Close()
+                continue
+            }
+
+            try {
+                $term = $reqData.term
+                $lang = if ($reqData.language) { $reqData.language } else { "en" }
+                $sysInstruction = if ($reqData.systemInstruction) { $reqData.systemInstruction } else { "You are a medical information simplification assistant. Accurately explain the exact medical topic requested by the user." }
+
+                $userPrompt = "Explain the exact medical term: `"$term`" in language: `"$lang`". Output valid JSON conforming to the schema."
+
+                $geminiBody = @{
+                    contents = @(
+                        @{
+                            role = "user"
+                            parts = @(@{ text = $userPrompt })
+                        }
+                    )
+                    systemInstruction = @{
+                        parts = @(@{ text = $sysInstruction })
+                    }
+                    generationConfig = @{
+                        temperature = 0.2
+                        topP = 0.95
+                        maxOutputTokens = 2048
+                        responseMimeType = "application/json"
+                    }
+                } | ConvertTo-Json -Depth 10
+
+                $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+                $geminiRes = Invoke-RestMethod -Uri $apiUrl -Method Post -Body $geminiBody -ContentType "application/json" -TimeoutSec 25
+
+                if ($geminiRes.candidates -and $geminiRes.candidates.Count -gt 0) {
+                    $jsonText = $geminiRes.candidates[0].content.parts[0].text.Trim()
+                    if ($jsonText.StartsWith("```json")) {
+                        $jsonText = $jsonText.Substring(7)
+                    }
+                    if ($jsonText.StartsWith("```")) {
+                        $jsonText = $jsonText.Substring(3)
+                    }
+                    if ($jsonText.EndsWith("```")) {
+                        $jsonText = $jsonText.Substring(0, $jsonText.Length - 3)
+                    }
+                    $jsonText = $jsonText.Trim()
+                    $parsed = $jsonText | ConvertFrom-Json
+
+                    $resPayload = @{
+                        success = $true
+                        result = $parsed
+                        provider = "Google Gemini 1.5 Flash (Strict Simplifier Proxy)"
+                    } | ConvertTo-Json -Depth 10
+                } else {
+                    throw "Empty response from Gemini API"
+                }
+
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($resPayload)
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            } catch {
+                $response.StatusCode = 502
+                $errMsg = $_.Exception.Message
+                $errPayload = @{
+                    success = $false
+                    error = "AI_GATEWAY_ERROR"
+                    message = "LLM request failed: $errMsg"
+                } | ConvertTo-Json
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($errPayload)
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            }
+
+            $response.Close()
+            continue
+        }
+
+        # -------------------------------------------------------------
         # Static File Serving
         # -------------------------------------------------------------
         $filePath = Join-Path $scriptDir $urlPath

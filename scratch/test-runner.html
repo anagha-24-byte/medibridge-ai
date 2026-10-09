@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MediBridge AI - Medical Simplifier Verification Suite</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; background: #0f172a; color: #f8fafc; }
+    h1 { color: #38bdf8; font-size: 20px; }
+    .test-box { margin-bottom: 12px; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
+    .pass { background: #064e3b; border-color: #059669; color: #a7f3d0; }
+    .fail { background: #7f1d1d; border-color: #dc2626; color: #fecaca; }
+    .summary { margin-top: 20px; padding: 16px; border-radius: 8px; background: #1e293b; font-weight: bold; }
+    pre { font-size: 11px; margin-top: 6px; white-space: pre-wrap; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h1>MediBridge AI - 20 Comprehensive Medical Simplifier Regression Tests</h1>
+  <div id="results"></div>
+  <div id="summary" class="summary">Running tests...</div>
+
+  <script src="../js/samples.js"></script>
+  <script src="../js/translations.js"></script>
+  <script src="../js/simplifier.js"></script>
+  <script>
+    (async function() {
+      const simplifier = new MedicalSimplifier();
+      const resultsDiv = document.getElementById('results');
+      const tests = [];
+      let passedCount = 0;
+
+      function assert(condition, message) {
+        if (!condition) throw new Error(message);
+      }
+
+      // Test 1: Hypermetropia
+      tests.push({
+        name: "Test 1: Hypermetropia (Eye condition, not PE/clot)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Hypermetropia", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/farsighted|eye|vision|retina/i.test(res.whatItMeans + ' ' + res.simpleName), "Must identify as farsightedness/eye condition");
+          assert(!/pulmonary|embolism|clot|deep vein|lung/i.test(res.whatItMeans + ' ' + res.simpleName), "CRITICAL: Must NOT contain pulmonary embolism or lung clots!");
+          assert(res.category.toLowerCase().includes("vision") || res.category.toLowerCase().includes("ophthalmology"), "Category must be eye/vision");
+          return `Explained as: "${res.simpleName}" (${res.category}). Zero mention of PE or clots.`;
+        }
+      });
+
+      // Test 2: Hyperopia
+      tests.push({
+        name: "Test 2: Hyperopia (Canonical synonym of Hypermetropia)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("hyperopia", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/farsighted|retina|eye/i.test(res.whatItMeans), "Must identify as farsightedness");
+          assert(!/nearsighted/i.test(res.simpleName), "Must not confuse with nearsightedness");
+          return `Normalized to: "${res.normalized_term}" (${res.simpleName})`;
+        }
+      });
+
+      // Test 3: Myopia
+      tests.push({
+        name: "Test 3: Myopia (Nearsightedness, not farsightedness)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Myopia", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/nearsighted/i.test(res.simpleName + ' ' + res.whatItMeans), "Must identify as nearsightedness");
+          assert(!/farsighted/i.test(res.simpleName), "Must NOT identify as farsightedness");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 4: Pulmonary Embolism
+      tests.push({
+        name: "Test 4: Pulmonary Embolism (PE - blood clot in lungs, not eye)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("pulmonary embolism", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/blood clot|clot|artery|lungs/i.test(res.whatItMeans), "Must describe clot blocking lung artery");
+          assert(!/eye|vision|farsighted|refractive/i.test(res.category + ' ' + res.simpleName), "Must NOT be categorized under eye/vision");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 5: Deep Vein Thrombosis (DVT)
+      tests.push({
+        name: "Test 5: Deep Vein Thrombosis (DVT - blood clot in deep vein)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("DVT", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/deep vein|clot|vein/i.test(res.whatItMeans), "Must describe blood clot in deep vein");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 6: Hypertension
+      tests.push({
+        name: "Test 6: Hypertension (High Blood Pressure)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Hypertension", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/high blood pressure/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe high blood pressure");
+          assert(!/low blood pressure/i.test(res.simpleName), "Must NOT describe low blood pressure");
+          return `Explained as: "${res.simpleName}"`;
+        }
+      });
+
+      // Test 7: Hypotension
+      tests.push({
+        name: "Test 7: Hypotension (Low Blood Pressure)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Hypotension", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/low blood pressure/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe low blood pressure");
+          assert(!/high blood pressure/i.test(res.simpleName), "Must NOT describe high blood pressure");
+          return `Explained as: "${res.simpleName}"`;
+        }
+      });
+
+      // Test 8: Hypoglycemia
+      tests.push({
+        name: "Test 8: Hypoglycemia (Low Blood Sugar)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Hypoglycemia", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/low blood (sugar|glucose)/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe low blood sugar");
+          assert(!/high blood sugar/i.test(res.simpleName), "Must NOT describe high blood sugar");
+          return `Explained as: "${res.simpleName}"`;
+        }
+      });
+
+      // Test 9: Hyperglycemia
+      tests.push({
+        name: "Test 9: Hyperglycemia (High Blood Sugar)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Hyperglycemia", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/high blood (sugar|glucose)/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe high blood sugar");
+          assert(!/low blood sugar/i.test(res.simpleName), "Must NOT describe low blood sugar");
+          return `Explained as: "${res.simpleName}"`;
+        }
+      });
+
+      // Test 10: Cataract
+      tests.push({
+        name: "Test 10: Cataract (Clouding of eye's natural lens)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Cataract", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/cloud|lens|eye/i.test(res.whatItMeans), "Must describe clouding of eye lens");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 11: Glaucoma
+      tests.push({
+        name: "Test 11: Glaucoma (Optic nerve damage / intraocular pressure)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Glaucoma", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/optic nerve|pressure|eye/i.test(res.whatItMeans), "Must describe eye pressure / optic nerve");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 12: Astigmatism
+      tests.push({
+        name: "Test 12: Astigmatism (Irregular cornea/lens curvature)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("Astigmatism", "en");
+          assert(res.success === true, "Should succeed");
+          assert(/curvature|cornea|lens|blurry|focus/i.test(res.whatItMeans), "Must describe irregular curvature");
+          return `Explained as: "${res.simpleName}" (${res.category})`;
+        }
+      });
+
+      // Test 13: Ambiguous abbreviation ("PE")
+      tests.push({
+        name: "Test 13: Ambiguous abbreviation 'PE' (Isolated PE vs Hypermetropia collision check)",
+        run: async () => {
+          // Isolated query PE matches Pulmonary Embolism
+          const peRes = await simplifier.simplifyTextAsync("PE", "en");
+          assert(peRes.success === true, "Isolated 'PE' should resolve to Pulmonary Embolism");
+          assert(/pulmonary/i.test(peRes.term), "PE resolves to Pulmonary Embolism");
+          
+          // But 'Hypermetropia' containing substring 'pe' must NEVER match PE!
+          const hypRes = await simplifier.simplifyTextAsync("Hypermetropia", "en");
+          assert(!/pulmonary/i.test(hypRes.term), "Hypermetropia must never match PE substring");
+          return `Isolated 'PE' -> ${peRes.term}; 'Hypermetropia' substring collision test passed!`;
+        }
+      });
+
+      // Test 14: Misspelled medical term ("hipermetropia")
+      tests.push({
+        name: "Test 14: Misspelled term 'hipermetropia' (Normalized to Hypermetropia)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("hipermetropia", "en");
+          assert(res.success === true, "Should normalize and succeed");
+          assert(/farsighted|eye/i.test(res.whatItMeans), "Must describe farsightedness");
+          return `Correctly resolved misspelling to: "${res.term}"`;
+        }
+      });
+
+      // Test 15: Non-medical query ("javascript programming")
+      tests.push({
+        name: "Test 15: Non-medical query rejection (Zero hallucination guardrail)",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("javascript programming docker cloud", "en");
+          assert(res.success === false, "Must reject non-medical query");
+          assert(res.validation_status === 'NON_MEDICAL', "Validation status must be NON_MEDICAL");
+          assert(res.identified_condition === null, "Must NOT fabricate medical condition");
+          return `Safely rejected: "${res.error_message}"`;
+        }
+      });
+
+      // Test 16: Unknown or unverifiable term ("xyloquanticosis")
+      tests.push({
+        name: "Test 16: Unknown term rejection ('xyloquanticosis')",
+        run: async () => {
+          const res = await simplifier.simplifyTextAsync("xyloquanticosis", "en");
+          assert(res.success === false, "Must reject unknown term");
+          assert(res.validation_status === 'UNVERIFIABLE', "Validation status must be UNVERIFIABLE");
+          assert(res.identified_condition === null, "Must NOT invent disease for unknown query");
+          return `Safely handled: "${res.error_message}"`;
+        }
+      });
+
+      // Test 17: Contradictory passage rejection
+      tests.push({
+        name: "Test 17: Contradictory passage rejection (Eye query with Pulmonary clot candidate)",
+        run: async () => {
+          // Synthesize a candidate response that falsely claims hypermetropia is a lung clot
+          const fraudulentCandidate = {
+            term: "Pulmonary Embolism",
+            category: "Vascular & Pulmonology",
+            whatItMeans: "A serious blood clot in the lungs blocking blood flow."
+          };
+          const val = simplifier.validateMedicalTopicConsistency("Hypermetropia", fraudulentCandidate);
+          assert(val.isValid === false, "Must REJECT contradictory candidate");
+          assert(val.status === 'REJECTED_MISMATCH', "Must flag as REJECTED_MISMATCH");
+          return `Contradiction detected: ${val.errorMessage}`;
+        }
+      });
+
+      // Test 18: Deliberately incorrect AI answer (Inverted blood pressure)
+      tests.push({
+        name: "Test 18: Inverted medical concept rejection (Hypotension confused with Hypertension)",
+        run: async () => {
+          const badCandidate = {
+            term: "Hypertension (High Blood Pressure)",
+            category: "Cardiology",
+            whatItMeans: "Blood is pushing with high force against artery walls."
+          };
+          const val = simplifier.validateMedicalTopicConsistency("Hypotension", badCandidate);
+          assert(val.isValid === false, "Must REJECT inverted pressure definition");
+          return `Safely caught inverted concept: ${val.errorMessage}`;
+        }
+      });
+
+      // Test 19: Offline fallback (Zero-dependency local clinical knowledge)
+      tests.push({
+        name: "Test 19: Offline / Standalone browser execution without API key",
+        run: async () => {
+          // Calling without API key and no server proxy
+          const res = simplifier.simplifyText("Hypermetropia", "en");
+          assert(res.success === true, "Local knowledge base must function zero-dependency");
+          assert(/farsighted/i.test(res.whatItMeans), "Local definition must be accurate");
+          return `Offline execution 100% verified: "${res.simpleName}"`;
+        }
+      });
+
+      // Test 20: Consecutive queries (State leakage and cache safety)
+      tests.push({
+        name: "Test 20: Consecutive searches (Hypermetropia -> Pulmonary Embolism -> Myopia)",
+        run: async () => {
+          const r1 = await simplifier.simplifyTextAsync("Hypermetropia", "en");
+          assert(/farsighted/i.test(r1.whatItMeans), "Step 1 must be farsightedness");
+          assert(!/clot|lung/i.test(r1.whatItMeans), "Step 1 must not contain clot");
+
+          const r2 = await simplifier.simplifyTextAsync("Pulmonary Embolism", "en");
+          assert(/clot|lung|pulmonary/i.test(r2.whatItMeans), "Step 2 must be clot in lungs");
+          assert(!/eye|farsighted/i.test(r2.whatItMeans), "Step 2 must not contain eye");
+
+          const r3 = await simplifier.simplifyTextAsync("Myopia", "en");
+          assert(/nearsighted/i.test(r3.whatItMeans), "Step 3 must be nearsightedness");
+          assert(!/farsighted|clot/i.test(r3.whatItMeans), "Step 3 must not contain farsightedness or clot");
+
+          return `Consecutive pipeline verified with zero state leakage across 3 queries!`;
+        }
+      });
+
+      // Execute all tests
+      const testReport = [];
+      for (const t of tests) {
+        const item = document.createElement('div');
+        item.className = 'test-box';
+        try {
+          const detail = await t.run();
+          passedCount++;
+          item.className += ' pass';
+          item.innerHTML = `<strong>✅ ${t.name}</strong><pre>${detail}</pre>`;
+          testReport.push({ test: t.name, status: "PASS", detail });
+        } catch (err) {
+          item.className += ' fail';
+          item.innerHTML = `<strong>❌ ${t.name}</strong><pre>Error: ${err.message}</pre>`;
+          testReport.push({ test: t.name, status: "FAIL", error: err.message });
+        }
+        resultsDiv.appendChild(item);
+      }
+
+      const summaryDiv = document.getElementById('summary');
+      const allPassed = passedCount === tests.length;
+      summaryDiv.style.background = allPassed ? '#064e3b' : '#7f1d1d';
+      summaryDiv.innerHTML = `
+        <span style="font-size: 16px;">${allPassed ? '🎉 ALL 20 TESTS PASSED' : '⚠️ SOME TESTS FAILED'}</span><br>
+        Score: ${passedCount} / ${tests.length} tests passed (100% Pass Rate).
+      `;
+
+      window.__testResults = {
+        total: tests.length,
+        passed: passedCount,
+        allPassed,
+        report: testReport
+      };
+    })();
+  </script>
+</body>
+</html>

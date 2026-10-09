@@ -753,7 +753,8 @@ const MEDICAL_GLOSSARY = [
   },
   {
     term: "Deep Vein Thrombosis (DVT)",
-    category: "Vascular",
+    aliases: ["deep vein thrombosis", "dvt", "blood clot in leg", "deep venous thrombosis", "leg vein clot", "clot in leg"],
+    category: "Vascular & Circulatory Care",
     simpleName: "Blood Clot in a Deep Vein (Usually Leg)",
     meaning: "A blood clot forms in one of the deep veins of your body, most frequently in the calf or thigh, causing localized swelling, warmth, redness, and pain.",
     analogy: "Like a clump of debris getting wedged inside an underground drainage pipe, causing water behind it to back up and swell.",
@@ -766,7 +767,8 @@ const MEDICAL_GLOSSARY = [
   },
   {
     term: "Pulmonary Embolism (PE)",
-    category: "Pulmonology / Vascular",
+    aliases: ["pulmonary embolism", "pe", "blood clot in lungs", "lung clot", "pulmonary embolus", "clot in lung", "pulmonary thromboembolism"],
+    category: "Pulmonology & Vascular Care",
     simpleName: "Blood Clot Blockage in the Lungs",
     meaning: "A blood clot (usually originating in the deep leg veins) travels through the bloodstream and blocks one of the pulmonary arteries in the lungs, reducing oxygen exchange.",
     analogy: "Like a leaf getting sucked into the intake filter of a swimming pool pump, choking off the circulation of water through the filter.",
@@ -1558,6 +1560,183 @@ const MEDICAL_GLOSSARY = [
       "Which specific lab results were outside the standard reference range?",
       "Is this abnormal score mild and temporary, or does it require medication or lifestyle changes?",
       "When should we repeat this test to check if the numbers have normalized?"
+    ]
+  },
+
+  // Ophthalmology / Vision Care & Refractive Errors
+  {
+    term: "Hypermetropia",
+    aliases: ["hypermetropia", "hyperopia", "farsightedness", "long-sightedness", "far-sightedness", "hypermetropic", "farsighted"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Farsightedness (Difficulty Seeing Nearby Objects Clearly)",
+    meaning: "Farsightedness (hypermetropia) is a very common refractive error of the eye where distant objects are seen more clearly than near objects. It occurs when light rays entering the eye focus behind the retina instead of directly on its light-sensitive surface.",
+    analogy: "Like a projector screen positioned slightly too close to the projector — the sharp picture is cast on the wall behind the screen, making the image on the screen look soft and out of focus until adjusted with a plus lens.",
+    whyChecked: "Diagnosed by optometrists and ophthalmologists during visual acuity tests and refraction exams to prescribe convex (+) corrective lenses, relieve chronic eye strain, and eliminate reading headaches.",
+    causes: "The eyeball is structurally slightly shorter than average from front to back, or the cornea (clear front window of the eye) has too little curvature.",
+    symptoms: "Eyestrain, aching or burning sensation around the eyes, frontal headaches after reading or close computer work, and blurred vision when focusing on nearby text.",
+    diagnosis: "Comprehensive dilated eye exam, visual acuity chart, and phoropter refraction assessment.",
+    treatmentOverview: "Prescription eyeglasses with convex lenses (+ diopters), contact lenses, or refractive surgery (such as LASIK or PRK) in suitable adults.",
+    whenToSeekCare: "Schedule an eye appointment if you experience frequent eyestrain, headaches after reading, or difficulty focusing on nearby tasks.",
+    sourceReferences: "National Eye Institute (NEI), MedlinePlus, American Academy of Ophthalmology (AAO)",
+    doctorQuestions: [
+      "What diopter prescription strength do I need for reading and near computer work?",
+      "Will wearing corrective eyeglasses prevent my near vision from getting worse?",
+      "Can applying the 20-20-20 rule (looking 20 feet away every 20 minutes) reduce my reading eyestrain?"
+    ]
+  },
+  {
+    term: "Hyperopia",
+    aliases: ["hyperopia", "hypermetropia", "farsightedness", "long-sightedness", "far sightedness"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Farsightedness (Hypermetropia)",
+    meaning: "Hyperopia is the clinical term interchangeable with hypermetropia, describing a common optical condition where light rays focus behind the retina, causing close-up tasks to appear blurred or tire the eyes.",
+    analogy: "Like camera autofocus struggling to lock onto a book held right up close because the lens cannot flex enough without an optical booster.",
+    whyChecked: "Evaluated routinely in children and adults to ensure clear binocular vision and prevent eye fatigue.",
+    causes: "Shorter axial length of the globe or flatter corneal curvature.",
+    symptoms: "Fatigue, headache, blurriness during near tasks.",
+    diagnosis: "Retinoscopy and subjective refraction testing.",
+    treatmentOverview: "Convex eyeglasses, contact lenses, refractive surgery.",
+    whenToSeekCare: "See an eye care specialist if near vision is blurred or causes headaches.",
+    sourceReferences: "National Eye Institute (NEI), MedlinePlus",
+    doctorQuestions: [
+      "Do I need to wear glasses all day or only while reading and using screens?",
+      "How frequently should I schedule follow-up vision checks?"
+    ]
+  },
+  {
+    term: "Myopia",
+    aliases: ["myopia", "nearsightedness", "short-sightedness", "near-sightedness", "myopic", "nearsighted"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Nearsightedness (Difficulty Seeing Distant Objects Clearly)",
+    meaning: "Nearsightedness (myopia) is a common refractive error where close objects appear sharp and clear, but distant objects (like road signs, classroom boards, or TV screens) appear blurry and out of focus because light focuses in front of the retina.",
+    analogy: "Like a projector focusing its sharp image in the air several inches in front of the screen rather than crisp on the screen surface.",
+    whyChecked: "Diagnosed by eye doctors to prescribe concave (-) lenses, optimize distance visual acuity, and monitor progressive axial elongation.",
+    causes: "The eyeball is slightly too long from front to back, or the cornea is curved too steeply.",
+    symptoms: "Squinting to see road signs, headaches from eye fatigue, blurred distant vision, needing to sit closer to television or board.",
+    diagnosis: "Snellen eye chart visual acuity test and objective refraction.",
+    treatmentOverview: "Concave eyeglasses (- diopters), contact lenses, orthokeratology, or refractive surgery (LASIK / SMILE) in adults.",
+    whenToSeekCare: "Schedule an eye examination if you notice difficulty reading signs while driving or find yourself squinting at distances.",
+    sourceReferences: "National Eye Institute (NEI), American Optometric Association (AOA), MedlinePlus",
+    doctorQuestions: [
+      "What is my current prescription power (- diopters), and has it changed since my last visit?",
+      "Can spending more time outdoors in natural light slow down myopia progression?",
+      "Am I a good candidate for contact lenses or laser vision correction?"
+    ]
+  },
+  {
+    term: "Astigmatism",
+    aliases: ["astigmatism", "corneal astigmatism", "irregular cornea curvature", "cylinder power", "cylindrical refractive error", "astigmatic"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Irregular Cornea Curvature (Blurry Vision at All Distances)",
+    meaning: "An optical imperfection in which the clear front surface of the eye (cornea) or the crystalline lens has an irregular, oblong curvature — shaped more like a football than a round basketball — causing blurred or stretched vision at all distances.",
+    analogy: "Looking through the curved, wavy glass of an antique bottle where straight lines appear slightly stretched, tilted, or doubled.",
+    whyChecked: "Identified with keratometry and corneal topography to prescribe specialized toric lenses with cylinder and axis correction.",
+    causes: "Uneven curvature of the cornea or intraocular lens, often inherited or occurring naturally alongside myopia or hyperopia.",
+    symptoms: "Blurry or distorted vision at both near and far distances, eyestrain, squinting, difficulty seeing clearly during night driving.",
+    diagnosis: "Phoropter refraction, keratometry, and corneal topography mapping.",
+    treatmentOverview: "Toric eyeglasses or contact lenses, rigid gas permeable lenses, or refractive surgery.",
+    whenToSeekCare: "Visit an optometrist if you experience blurred or ghosted outlines around letters at any distance.",
+    sourceReferences: "National Eye Institute (NEI), MedlinePlus",
+    doctorQuestions: [
+      "What are the cylinder and axis numbers on my prescription indicating my astigmatism?",
+      "Would toric soft contact lenses provide clear, stable vision for my daily activities?"
+    ]
+  },
+  {
+    term: "Presbyopia",
+    aliases: ["presbyopia", "age-related reading vision loss", "reading glasses power", "presbyopic"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Age-Related Loss of Close Focusing Power",
+    meaning: "The gradual, natural loss of the eye's ability to focus actively on nearby objects as part of the aging process, typically becoming noticeable in the early to mid-40s as the natural crystalline lens inside the eye becomes firmer and less flexible.",
+    analogy: "Like an old camera lens whose zoom ring has stiffened over time — it still takes clear panoramic photos of the landscape, but struggles to zoom into micro close-ups.",
+    whyChecked: "Routinely diagnosed during middle-age eye exams to prescribe reading glasses, bifocals, or progressive lenses.",
+    causes: "Natural stiffening and reduced elasticity of the crystalline lens and ciliary muscles inside the eye.",
+    symptoms: "Holding reading material at arm's length to focus, eyestrain or fatigue after close work, headaches when reading fine print in dim light.",
+    diagnosis: "Standard near-vision reading acuity chart testing.",
+    treatmentOverview: "Over-the-counter or prescription reading glasses, bifocal or progressive lenses, multifocal contact lenses.",
+    whenToSeekCare: "Consult an eye doctor when you find yourself holding your phone or books farther away to read them clearly.",
+    sourceReferences: "National Eye Institute (NEI), Mayo Clinic, MedlinePlus",
+    doctorQuestions: [
+      "Would progressive lenses or separate reading glasses work best for my daily work?",
+      "How frequently should I expect my reading prescription to increase as I age?"
+    ]
+  },
+  {
+    term: "Cataract",
+    aliases: ["cataract", "cataracts", "cloudy eye lens", "lens opacification"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Clouding of the Eye's Natural Lens",
+    meaning: "A common condition where the clear, natural lens inside the eye becomes cloudy or yellowish over time, preventing light from passing cleanly to the retina, resulting in hazy, foggy, or dimmer vision.",
+    analogy: "Like looking out through a frosty, fogged-up bathroom window on a cold morning — shapes and lights still come through, but fine details and colors look faded and cloudy.",
+    whyChecked: "Ophthalmologists check with a slit-lamp biomicroscope to measure lens clarity and determine if surgical lens replacement is needed.",
+    causes: "Aging, UV light exposure, diabetes, smoking, corticosteroid use, or prior eye trauma.",
+    symptoms: "Painless gradual clouding of vision, increased glare and halos around headlights at night, faded color perception, needing brighter light to read.",
+    diagnosis: "Slit-lamp examination, visual acuity test, and dilated retinal exam.",
+    treatmentOverview: "Updated eyeglasses in early stages; safe, standard outpatient cataract surgery with artificial intraocular lens (IOL) implantation when vision impairs daily tasks.",
+    whenToSeekCare: "Seek care if blurred vision or night driving glare interferes with your normal driving, reading, or daily independence.",
+    sourceReferences: "National Eye Institute (NEI), American Academy of Ophthalmology (AAO), MedlinePlus",
+    doctorQuestions: [
+      "Is my cataract mild enough to manage with brighter reading lights and stronger glasses, or is surgery appropriate?",
+      "What types of intraocular replacement lenses (monofocal, toric, multifocal) are suitable for my eyes?"
+    ]
+  },
+  {
+    term: "Glaucoma",
+    aliases: ["glaucoma", "high eye pressure", "ocular hypertension", "optic nerve damage"],
+    category: "Ophthalmology / Vision Care",
+    simpleName: "Optic Nerve Condition Usually Caused by High Fluid Pressure in the Eye",
+    meaning: "A group of eye diseases that cause progressive damage to the optic nerve (the cable carrying visual signals from the eye to the brain), most often related to elevated intraocular fluid pressure (IOP). It is often called the 'silent thief of sight' because early stages cause no pain or warning signs.",
+    analogy: "Like high water pressure inside a delicate pipe system slowly compressing and damaging the sensitive electrical wiring running right beside the pipe.",
+    whyChecked: "Tested during routine eye exams using tonometry (eye pressure measurement) and optical coherence tomography (OCT) to detect and protect the optic nerve before permanent peripheral vision is lost.",
+    causes: "Imbalance between fluid production and drainage through the eye's trabecular meshwork, resulting in buildup of fluid pressure.",
+    symptoms: "Usually zero early symptoms in open-angle glaucoma; gradual loss of peripheral (side) vision; acute angle-closure causes sudden severe eye pain, nausea, and halos around lights.",
+    diagnosis: "Tonometry (eye pressure), gonioscopy (drainage angle exam), visual field test, and OCT optic nerve scan.",
+    treatmentOverview: "Daily prescription pressure-lowering eye drops, laser trabeculoplasty, or minimally invasive glaucoma surgery (MIGS) to protect existing vision.",
+    whenToSeekCare: "Routine screening is critical every 1–2 years; sudden eye pain with nausea and rainbow halos requires emergency medical evaluation.",
+    sourceReferences: "National Eye Institute (NEI), Glaucoma Research Foundation, MedlinePlus",
+    doctorQuestions: [
+      "What is my target eye pressure (IOP), and are my current eye drops keeping it stable?",
+      "How often do I need a visual field test and OCT optic nerve scan to verify that my vision is protected?"
+    ]
+  },
+
+  // Endocrinology & Metabolic Conditions
+  {
+    term: "Hypoglycemia",
+    aliases: ["hypoglycemia", "low blood sugar", "low glucose", "sugar crash", "hypoglycemic"],
+    category: "Endocrinology / Metabolism",
+    simpleName: "Low Blood Sugar (Below 70 mg/dL)",
+    meaning: "A clinical condition where the concentration of glucose circulating in the bloodstream falls below healthy levels (typically defined as less than 70 mg/dL), leaving body cells and the brain without their primary energy source.",
+    analogy: "Like your car's fuel tank running on empty while driving on the highway — the engine begins sputtering, hesitating, and threatens to stall unless rapidly refueled.",
+    whyChecked: "Monitored closely in patients taking diabetes medications (especially insulin or sulfonylureas) to prevent dangerous drops in consciousness.",
+    causes: "Taking too much diabetes medicine or insulin, skipping or delaying a meal, unusual heavy physical exertion, or excessive alcohol.",
+    symptoms: "Shakiness, rapid heartbeat, cold sweating, dizziness, sudden hunger, confusion, irritability, and blurred vision.",
+    diagnosis: "Immediate capillary fingerstick blood glucose measurement (< 70 mg/dL).",
+    treatmentOverview: "The 'Rule of 15': Consume 15 grams of fast-acting carbohydrates (4 oz juice, 3–4 glucose tablets), recheck glucose in 15 minutes, repeat if still low. Severe episodes require prescription glucagon.",
+    whenToSeekCare: "Seek immediate emergency care (call 112 / 108 / 911) if confusion worsens, the patient cannot safely swallow, or a seizure occurs.",
+    sourceReferences: "American Diabetes Association (ADA), National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK), MedlinePlus",
+    doctorQuestions: [
+      "What is my personal low blood sugar threshold, and should my medication doses be adjusted?",
+      "Do I need an emergency glucagon nasal spray or autoinjector prescribed for my family to keep on hand?"
+    ]
+  },
+  {
+    term: "Hyperglycemia",
+    aliases: ["hyperglycemia", "high blood sugar", "high glucose", "elevated blood sugar", "hyperglycemic"],
+    category: "Endocrinology / Metabolism",
+    simpleName: "High Blood Sugar (Above Normal Targets)",
+    meaning: "A state where an abnormally high concentration of glucose circulates in the blood plasma, commonly occurring in diabetes when the body produces insufficient insulin or cells resist insulin's actions.",
+    analogy: "Like syrup being poured into a car's cooling lines instead of clean water — the thickened, sugary fluid flows sluggishly and slowly damages sensitive pipes and filters over time.",
+    whyChecked: "Tested routinely with fasting blood sugar and HbA1c to prevent long-term damage to blood vessels, kidneys, nerves, and retinas.",
+    causes: "Insufficient diabetes medication, high-carbohydrate meals, illness or infection, psychological stress, or physical inactivity.",
+    symptoms: "Frequent urination (polyuria), unquenchable thirst (polydipsia), dry mouth, unexplained fatigue, and blurred vision.",
+    diagnosis: "Fasting plasma glucose (≥ 126 mg/dL), postprandial glucose (> 180–200 mg/dL), or elevated HbA1c (≥ 6.5%).",
+    treatmentOverview: "Dietary adjustments, increased water hydration, regular physical activity, and doctor-prescribed diabetes medications (like metformin or insulin).",
+    whenToSeekCare: "Contact your doctor if blood sugar stays consistently high above 240 mg/dL or if you develop fruity breath, nausea, or deep breathing (signs of DKA).",
+    sourceReferences: "American Diabetes Association (ADA), CDC Diabetes Resources, MedlinePlus",
+    doctorQuestions: [
+      "What are my daily target blood sugar ranges before and after meals?",
+      "What adjustments should I make to my diet and exercise plan to keep my levels steady?"
     ]
   }
 ];
