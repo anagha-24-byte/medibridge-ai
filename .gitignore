@@ -28,7 +28,9 @@ desktop.ini
 *.njsproj
 
 # Build & Temporary runtime artifacts
-scratch/test-dom.html
-scratch/edge-err.log
+scratch/*-dom.html
+scratch/*.log
 scratch/*.tmp
+scratch/extract.ps1
+scratch/vault_prompt.txt
 data/temp/

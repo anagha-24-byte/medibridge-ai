@@ -193,6 +193,11 @@ function initMediBridgeApp() {
       }
       handleManualHospitalSearch();
     }
+
+    // Refresh Medical Vault dashboard when navigated to
+    if (sectionId === 'vault' && window.VaultManager) {
+      window.VaultManager.render();
+    }
   }
 
   navLinks.forEach(link => {
@@ -2117,6 +2122,11 @@ function initMediBridgeApp() {
   // Load initial welcome chat message
   if (chatMessagesContainer && chatMessagesContainer.children.length === 0) {
     appendChatMessage('assistant', assistant.getWelcomeMessage(state.currentLanguage));
+  }
+
+  // Initialize Personal Medical Vault
+  if (window.VaultManager) {
+    window.VaultManager.init();
   }
 }
 

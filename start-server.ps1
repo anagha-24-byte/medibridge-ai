@@ -261,6 +261,141 @@ while ($listener.IsListening) {
         }
 
         # -------------------------------------------------------------
+        # API Routes: /api/vault/* (Medical Vault Persistence & Doctor Access)
+        # -------------------------------------------------------------
+        if ($urlPath.StartsWith("api/vault/")) {
+            $response.ContentType = "application/json; charset=utf-8"
+            $vaultBaseDir = Join-Path $scriptDir "data\vault"
+            if (-not (Test-Path $vaultBaseDir)) {
+                New-Item -ItemType Directory -Path $vaultBaseDir -Force | Out-Null
+            }
+
+            # Helper to sanitize userId against path traversal
+            function Sanitize-UserId($uid) {
+                if (-not $uid) { return "patient_default_01" }
+                $clean = $uid -replace '[^a-zA-Z0-9_-]', ''
+                if ([string]::IsNullOrWhiteSpace($clean)) { return "patient_default_01" }
+                return $clean
+            }
+
+            # Route: GET /api/vault/data?userId=...
+            if ($urlPath -eq "api/vault/data" -and $request.HttpMethod -eq "GET") {
+                $uid = Sanitize-UserId ($request.QueryString["userId"])
+                $userFile = Join-Path $vaultBaseDir "$uid\vault.json"
+                if (Test-Path $userFile) {
+                    $jsonContent = [System.IO.File]::ReadAllText($userFile, [System.Text.Encoding]::UTF8)
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($jsonContent)
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                } else {
+                    $payload = @{ success = $true; vault = $null; message = "No saved server record for user" } | ConvertTo-Json
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                }
+                $response.Close()
+                continue
+            }
+
+            # Route: POST /api/vault/save?userId=...
+            if ($urlPath -eq "api/vault/save" -and $request.HttpMethod -eq "POST") {
+                $uid = Sanitize-UserId ($request.QueryString["userId"])
+                $userDir = Join-Path $vaultBaseDir $uid
+                if (-not (Test-Path $userDir)) { New-Item -ItemType Directory -Path $userDir -Force | Out-Null }
+                
+                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+                $body = $reader.ReadToEnd()
+                $userFile = Join-Path $userDir "vault.json"
+                [System.IO.File]::WriteAllText($userFile, $body, [System.Text.Encoding]::UTF8)
+
+                $payload = @{ success = $true; message = "Vault record saved securely" } | ConvertTo-Json
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                $response.Close()
+                continue
+            }
+
+            # Route: GET /api/vault/doctor-access?token=...&pin=...
+            if ($urlPath -eq "api/vault/doctor-access") {
+                $token = $request.QueryString["token"]
+                $pin = $request.QueryString["pin"]
+
+                $foundVault = $null
+                $matchedShare = $null
+                $files = Get-ChildItem -Path $vaultBaseDir -Filter "vault.json" -Recurse -ErrorAction SilentlyContinue
+
+                foreach ($f in $files) {
+                    try {
+                        $txt = [System.IO.File]::ReadAllText($f.FullName, [System.Text.Encoding]::UTF8)
+                        $data = $txt | ConvertFrom-Json
+                        $v = if ($data.vault) { $data.vault } else { $data }
+                        if ($v.shares) {
+                            foreach ($s in $v.shares) {
+                                if ($s.token -eq $token) {
+                                    $foundVault = $v
+                                    $matchedShare = $s
+                                    break
+                                }
+                            }
+                        }
+                    } catch {}
+                    if ($foundVault) { break }
+                }
+
+                if (-not $foundVault -or -not $matchedShare) {
+                    $payload = @{ success = $false; reason = "INVALID_TOKEN"; message = "Token not found" } | ConvertTo-Json
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                    $response.Close()
+                    continue
+                }
+
+                if ($matchedShare.revoked) {
+                    $payload = @{ success = $false; reason = "REVOKED"; message = "Access revoked by patient" } | ConvertTo-Json
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                    $response.Close()
+                    continue
+                }
+
+                $now = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+                if ($matchedShare.expiresAt -and ($now -gt $matchedShare.expiresAt)) {
+                    $payload = @{ success = $false; reason = "EXPIRED"; message = "Token has expired" } | ConvertTo-Json
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                    $response.Close()
+                    continue
+                }
+
+                if ($matchedShare.pinRequired) {
+                    if (-not $pin) {
+                        $payload = @{ success = $false; reason = "PIN_REQUIRED"; message = "Doctor PIN required" } | ConvertTo-Json
+                        $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                        $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                        $response.Close()
+                        continue
+                    }
+                }
+
+                $payload = @{
+                    success = $true
+                    share = $matchedShare
+                    record = @{
+                        profile = $foundVault.profile
+                        conditions = $foundVault.conditions
+                        medications = $foundVault.medications
+                        allergies = $foundVault.allergies
+                        documents = $foundVault.documents
+                        timeline = $foundVault.timeline
+                    }
+                } | ConvertTo-Json -Depth 10
+
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                $response.Close()
+                continue
+            }
+        }
+
+        # -------------------------------------------------------------
         # Static File Serving
         # -------------------------------------------------------------
         $filePath = Join-Path $scriptDir $urlPath
