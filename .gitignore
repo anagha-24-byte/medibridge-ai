@@ -1,0 +1,34 @@
+# ==============================================================================
+# MediBridge AI - Git Ignore
+# ==============================================================================
+
+# Environment variables & API keys
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.token
+
+# Logs & Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# System & OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+
+# Build & Temporary runtime artifacts
+scratch/test-dom.html
+scratch/edge-err.log
+scratch/*.tmp
+data/temp/
