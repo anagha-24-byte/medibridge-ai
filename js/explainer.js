@@ -216,7 +216,7 @@ class DocumentExplainer {
       return {
         status: 'non_medical',
         code: 'NON_MEDICAL_DOCUMENT',
-        message: "Unable to analyze this document. The uploaded file does not appear to contain relevant medical information. Please upload a medical report, prescription, lab result, or other healthcare document."
+        message: "This document does not appear to contain medical information. Please upload a medical report or document."
       };
     }
 
@@ -224,7 +224,7 @@ class DocumentExplainer {
       return {
         status: 'non_medical',
         code: 'NON_MEDICAL_DOCUMENT',
-        message: "Unable to analyze this document. The uploaded file does not appear to contain relevant medical information. Please upload a medical report, prescription, lab result, or other healthcare document."
+        message: "This document does not appear to contain medical information. Please upload a medical report or document."
       };
     }
 
@@ -232,7 +232,7 @@ class DocumentExplainer {
       return {
         status: 'uncertain_medical',
         code: 'UNCERTAIN_MEDICAL_RELEVANCE',
-        message: "We couldn't confirm that this is a medical document. Please upload the complete report with readable medical details."
+        message: "This document does not appear to contain medical information. Please upload a medical report or document."
       };
     }
 

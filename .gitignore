@@ -28,6 +28,11 @@ desktop.ini
 *.njsproj
 
 # Build & Temporary runtime artifacts
+node_modules/
+data/
+server/data/
+*.db
+*.sqlite
 scratch/*-dom.html
 scratch/*.log
 scratch/*.tmp

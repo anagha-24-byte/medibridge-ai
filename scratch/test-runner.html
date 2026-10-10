@@ -2,326 +2,243 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MediBridge AI - Medical Simplifier Verification Suite</title>
+  <title>MediBridge AI — Automated Test Suite</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; background: #0f172a; color: #f8fafc; }
-    h1 { color: #38bdf8; font-size: 20px; }
-    .test-box { margin-bottom: 12px; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; }
-    .pass { background: #064e3b; border-color: #059669; color: #a7f3d0; }
-    .fail { background: #7f1d1d; border-color: #dc2626; color: #fecaca; }
-    .summary { margin-top: 20px; padding: 16px; border-radius: 8px; background: #1e293b; font-weight: bold; }
-    pre { font-size: 11px; margin-top: 6px; white-space: pre-wrap; color: #94a3b8; }
+    body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; }
+    .test-box { padding: 12px; margin-bottom: 8px; border-radius: 8px; font-family: monospace; font-size: 13px; }
+    .pass { background: #064e3b; border: 1px solid #059669; color: #6ee7b7; }
+    .fail { background: #7f1d1d; border: 1px solid #dc2626; color: #fca5a5; }
+    #summary { font-size: 18px; font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: 8px; }
+    #summary.all-pass { background: #047857; color: white; }
+    #summary.has-fail { background: #b91c1c; color: white; }
   </style>
-</head>
-<body>
-  <h1>MediBridge AI - 20 Comprehensive Medical Simplifier Regression Tests</h1>
-  <div id="results"></div>
-  <div id="summary" class="summary">Running tests...</div>
-
   <script src="../js/samples.js"></script>
   <script src="../js/translations.js"></script>
-  <script src="../js/simplifier.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/appointments.js"></script>
+  <script src="../js/xray.js"></script>
+  <script src="../js/bloodtest.js"></script>
+  <script src="../js/explainer.js"></script>
+  <script src="../js/assistant.js"></script>
+  <script src="../js/hospitals.js"></script>
+</head>
+<body>
+  <h1>MediBridge AI Automated Test Suite</h1>
+  <div id="summary">Running tests...</div>
+  <div id="results"></div>
+
   <script>
-    (async function() {
-      const simplifier = new MedicalSimplifier();
-      const resultsDiv = document.getElementById('results');
-      const tests = [];
-      let passedCount = 0;
+    const resultsEl = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+    let passCount = 0;
+    let failCount = 0;
 
-      function assert(condition, message) {
-        if (!condition) throw new Error(message);
+    async function runTest(name, testFn) {
+      const box = document.createElement('div');
+      try {
+        await testFn();
+        box.className = 'test-box pass';
+        box.innerHTML = `<strong>✅ ${name}</strong><pre>PASSED</pre>`;
+        passCount++;
+      } catch (err) {
+        box.className = 'test-box fail';
+        box.innerHTML = `<strong>❌ ${name}</strong><pre>${err.message}\n${err.stack || ''}</pre>`;
+        failCount++;
       }
+      resultsEl.appendChild(box);
+    }
 
-      // Test 1: Hypermetropia
-      tests.push({
-        name: "Test 1: Hypermetropia (Eye condition, not PE/clot)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Hypermetropia", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/farsighted|eye|vision|retina/i.test(res.whatItMeans + ' ' + res.simpleName), "Must identify as farsightedness/eye condition");
-          assert(!/pulmonary|embolism|clot|deep vein|lung/i.test(res.whatItMeans + ' ' + res.simpleName), "CRITICAL: Must NOT contain pulmonary embolism or lung clots!");
-          assert(res.category.toLowerCase().includes("vision") || res.category.toLowerCase().includes("ophthalmology"), "Category must be eye/vision");
-          return `Explained as: "${res.simpleName}" (${res.category}). Zero mention of PE or clots.`;
+    async function executeAllTests() {
+      // Test 1: Simplifier is removed and Appointments exists
+      await runTest('Test 1: Appointments & Reminders module loaded', () => {
+        if (!window.appointmentsManager) throw new Error('appointmentsManager is not defined');
+        if (typeof window.appointmentsManager.createAppointment !== 'function') throw new Error('createAppointment method missing');
+      });
+
+      // Test 2: Vault is removed from global scope
+      await runTest('Test 2: Vault module is completely removed', () => {
+        if (typeof VaultManager !== 'undefined' || typeof window.vaultManager !== 'undefined') {
+          throw new Error('VaultManager is still present in global scope');
         }
       });
 
-      // Test 2: Hyperopia
-      tests.push({
-        name: "Test 2: Hyperopia (Canonical synonym of Hypermetropia)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("hyperopia", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/farsighted|retina|eye/i.test(res.whatItMeans), "Must identify as farsightedness");
-          assert(!/nearsighted/i.test(res.simpleName), "Must not confuse with nearsightedness");
-          return `Normalized to: "${res.normalized_term}" (${res.simpleName})`;
-        }
+      // Test 3: Dedicated X-Ray Analysis module loaded
+      await runTest('Test 3: X-Ray Analysis manager loaded and validates formats', () => {
+        if (!window.xrayManager) throw new Error('xrayManager missing');
+        const validJpeg = window.xrayManager.validateImageFile({ type: 'image/jpeg', size: 1024 * 1024 });
+        if (!validJpeg.valid) throw new Error('Valid JPEG was rejected');
+        const invalidPdf = window.xrayManager.validateImageFile({ type: 'application/pdf', size: 1024 });
+        if (invalidPdf.valid) throw new Error('PDF should be rejected for X-ray image analysis');
       });
 
-      // Test 3: Myopia
-      tests.push({
-        name: "Test 3: Myopia (Nearsightedness, not farsightedness)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Myopia", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/nearsighted/i.test(res.simpleName + ' ' + res.whatItMeans), "Must identify as nearsightedness");
-          assert(!/farsighted/i.test(res.simpleName), "Must NOT identify as farsightedness");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 4: Dedicated Blood Test Analysis extracts parameters
+      await runTest('Test 4: Blood Test Analysis extracts parameters and flags ranges', async () => {
+        if (!window.bloodTestManager) throw new Error('bloodTestManager missing');
+        const sampleText = `
+          PATIENT LAB REPORT:
+          Fasting Blood Glucose: 125 mg/dL
+          Hemoglobin A1c: 6.2 %
+          Hemoglobin: 11.5 g/dL
+          Total Cholesterol: 220 mg/dL
+          Serum Creatinine: 0.9 mg/dL
+        `;
+        const res = await window.bloodTestManager.processReport(sampleText, 'Sample Test');
+        if (!res.success) throw new Error('Blood test parsing failed');
+        if (!res.extractedValues || res.extractedValues.length < 4) throw new Error(`Extracted ${res.extractedValues.length} parameters, expected >= 4`);
+        const gluc = res.extractedValues.find(v => v.id === 'fasting_glucose');
+        if (!gluc || gluc.flag !== 'HIGH') throw new Error('Fasting glucose 125 mg/dL should be flagged HIGH');
       });
 
-      // Test 4: Pulmonary Embolism
-      tests.push({
-        name: "Test 4: Pulmonary Embolism (PE - blood clot in lungs, not eye)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("pulmonary embolism", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/blood clot|clot|artery|lungs/i.test(res.whatItMeans), "Must describe clot blocking lung artery");
-          assert(!/eye|vision|farsighted|refractive/i.test(res.category + ' ' + res.simpleName), "Must NOT be categorized under eye/vision");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 5: Blood Test rejects non-medical text
+      await runTest('Test 5: Blood Test rejects non-medical text', async () => {
+        const nonMedical = 'The project plan includes a sprint review on Monday and deployment on Friday.';
+        const res = await window.bloodTestManager.processReport(nonMedical, 'Project Doc');
+        if (res.success) throw new Error('Non-medical text was accepted as a blood test report');
+        if (res.error !== 'NOT_BLOOD_TEST') throw new Error(`Expected NOT_BLOOD_TEST, got ${res.error}`);
       });
 
-      // Test 5: Deep Vein Thrombosis (DVT)
-      tests.push({
-        name: "Test 5: Deep Vein Thrombosis (DVT - blood clot in deep vein)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("DVT", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/deep vein|clot|vein/i.test(res.whatItMeans), "Must describe blood clot in deep vein");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 6: Document Explainer rejects non-medical files with exact prompt error
+      await runTest('Test 6: Document Explainer rejects non-medical document with exact error', () => {
+        const explainer = new DocumentExplainer();
+        const nonMedical = 'My resume: Software Engineer with experience in Python, Git, and Docker.';
+        const res = explainer.analyzeDocument(nonMedical);
+        if (res.success) throw new Error('Non-medical text was accepted');
+        const expected = "This document does not appear to contain medical information. Please upload a medical report or document.";
+        if (res.error !== expected) throw new Error(`Expected exact error message "${expected}", got "${res.error}"`);
       });
 
-      // Test 6: Hypertension
-      tests.push({
-        name: "Test 6: Hypertension (High Blood Pressure)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Hypertension", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/high blood pressure/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe high blood pressure");
-          assert(!/low blood pressure/i.test(res.simpleName), "Must NOT describe low blood pressure");
-          return `Explained as: "${res.simpleName}"`;
-        }
+      // Test 7: Document Explainer processes valid clinical document
+      await runTest('Test 7: Document Explainer processes valid clinical discharge summary', () => {
+        const explainer = new DocumentExplainer();
+        const sample = SAMPLE_DOCUMENTS.discharge_summary;
+        if (!sample) throw new Error('Sample discharge summary missing');
+        const res = explainer.analyzeDocument(sample.rawText);
+        if (!res.success) throw new Error(`Clinical document failed: ${res.error}`);
+        if (!res.doctorQuestions || res.doctorQuestions.length === 0) throw new Error('No doctor questions generated');
       });
 
-      // Test 7: Hypotension
-      tests.push({
-        name: "Test 7: Hypotension (Low Blood Pressure)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Hypotension", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/low blood pressure/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe low blood pressure");
-          assert(!/high blood pressure/i.test(res.simpleName), "Must NOT describe high blood pressure");
-          return `Explained as: "${res.simpleName}"`;
-        }
+      // Test 8: Nearby Hospitals resolves location and calculates distance
+      await runTest('Test 8: Nearby Hospitals calculates distance and sorts facilities', async () => {
+        const mgr = new NearbyHospitalsManager();
+        // Bengaluru coordinates: 12.9716, 77.5946
+        const list = await mgr.getNearbyHospitals(12.9716, 77.5946, 10);
+        if (!list || list.length === 0) throw new Error('No hospitals returned for Bengaluru');
+        if (typeof list[0].distance !== 'number') throw new Error('Distance was not computed');
+        if (list.length > 1 && list[0].distance > list[1].distance) throw new Error('Hospitals not sorted nearest-first');
       });
 
-      // Test 8: Hypoglycemia
-      tests.push({
-        name: "Test 8: Hypoglycemia (Low Blood Sugar)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Hypoglycemia", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/low blood (sugar|glucose)/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe low blood sugar");
-          assert(!/high blood sugar/i.test(res.simpleName), "Must NOT describe high blood sugar");
-          return `Explained as: "${res.simpleName}"`;
-        }
+      // Test 9: Auth validation - Name and Mobile format
+      await runTest('Test 9: AuthManager validates Name and Mobile number', () => {
+        const auth = window.authManager;
+        const valid = auth.validateInput('Anagha S', '9876543210');
+        if (!valid.valid) throw new Error(`Valid input was rejected: ${valid.error}`);
+        const invalidMobile = auth.validateInput('Anagha S', '12345');
+        if (invalidMobile.valid) throw new Error('Invalid short mobile number was accepted');
+        const invalidName = auth.validateInput('A', '9876543210');
+        if (invalidName.valid) throw new Error('Invalid single-letter name was accepted');
       });
 
-      // Test 9: Hyperglycemia
-      tests.push({
-        name: "Test 9: Hyperglycemia (High Blood Sugar)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Hyperglycemia", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/high blood (sugar|glucose)/i.test(res.simpleName + ' ' + res.whatItMeans), "Must describe high blood sugar");
-          assert(!/low blood sugar/i.test(res.simpleName), "Must NOT describe low blood sugar");
-          return `Explained as: "${res.simpleName}"`;
-        }
+      // Test 10: Auth login session creation & logout
+      await runTest('Test 10: AuthManager login session and logout flow', async () => {
+        const auth = window.authManager;
+        const res = await auth.login('Anagha Student', '9876543210');
+        if (!res.success) throw new Error('Login failed');
+        if (!auth.isAuthenticated()) throw new Error('User not marked as authenticated');
+        if (auth.user.name !== 'Anagha Student') throw new Error('User name mismatch');
+        await auth.logout();
+        if (auth.isAuthenticated()) throw new Error('User still authenticated after logout');
       });
 
-      // Test 10: Cataract
-      tests.push({
-        name: "Test 10: Cataract (Clouding of eye's natural lens)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Cataract", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/cloud|lens|eye/i.test(res.whatItMeans), "Must describe clouding of eye lens");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 11: Appointments Manager prevents past dates
+      await runTest('Test 11: AppointmentsManager rejects past dates', async () => {
+        const appts = window.appointmentsManager;
+        const pastRes = await appts.createAppointment({
+          hospitalName: 'Victoria Hospital',
+          date: '2020-01-01',
+          time: '10:00',
+          purpose: 'Past Checkup'
+        });
+        if (pastRes.success) throw new Error('Past appointment date was accepted');
       });
 
-      // Test 11: Glaucoma
-      tests.push({
-        name: "Test 11: Glaucoma (Optic nerve damage / intraocular pressure)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Glaucoma", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/optic nerve|pressure|eye/i.test(res.whatItMeans), "Must describe eye pressure / optic nerve");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 12: Appointments Manager saves and deletes future appointments
+      await runTest('Test 12: AppointmentsManager creates and deletes valid appointment', async () => {
+        const appts = window.appointmentsManager;
+        const futureDate = new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0];
+        const res = await appts.createAppointment({
+          hospitalName: 'Victoria Hospital (BMCRI)',
+          hospitalAddress: 'Fort Road, Bengaluru',
+          hospitalPhone: '+91-80-26701150',
+          date: futureDate,
+          time: '11:00',
+          purpose: 'Cardiology Follow-up',
+          reminderEnabled: true,
+          reminderTime: '1_hour_before',
+          status: 'Reminder Saved'
+        });
+        if (!res.success || !res.appointment) throw new Error('Failed to create appointment');
+        const apptId = res.appointment.id;
+        await appts.deleteAppointment(apptId);
+        const found = appts.appointments.find(a => a.id === apptId);
+        if (found) throw new Error('Appointment was not deleted');
       });
 
-      // Test 12: Astigmatism
-      tests.push({
-        name: "Test 12: Astigmatism (Irregular cornea/lens curvature)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("Astigmatism", "en");
-          assert(res.success === true, "Should succeed");
-          assert(/curvature|cornea|lens|blurry|focus/i.test(res.whatItMeans), "Must describe irregular curvature");
-          return `Explained as: "${res.simpleName}" (${res.category})`;
-        }
+      // Test 13: Health Assistant red-flag emergency detection
+      await runTest('Test 13: Health Assistant red-flag emergency triage', async () => {
+        const assistant = new HealthAssistant();
+        const res = await assistant.processMessage('I have crushing chest pain spreading down my left arm and severe shortness of breath');
+        if (!res) throw new Error('No response returned');
+        if (res.type !== 'emergency') throw new Error(`Expected emergency response, got ${res.type}`);
+        if (!res.urgentAction) throw new Error('Urgent action flag not set for emergency');
       });
 
-      // Test 13: Ambiguous abbreviation ("PE")
-      tests.push({
-        name: "Test 13: Ambiguous abbreviation 'PE' (Isolated PE vs Hypermetropia collision check)",
-        run: async () => {
-          // Isolated query PE matches Pulmonary Embolism
-          const peRes = await simplifier.simplifyTextAsync("PE", "en");
-          assert(peRes.success === true, "Isolated 'PE' should resolve to Pulmonary Embolism");
-          assert(/pulmonary/i.test(peRes.term), "PE resolves to Pulmonary Embolism");
-          
-          // But 'Hypermetropia' containing substring 'pe' must NEVER match PE!
-          const hypRes = await simplifier.simplifyTextAsync("Hypermetropia", "en");
-          assert(!/pulmonary/i.test(hypRes.term), "Hypermetropia must never match PE substring");
-          return `Isolated 'PE' -> ${peRes.term}; 'Hypermetropia' substring collision test passed!`;
-        }
+      // Test 14: Health Assistant non-diagnostic refusal guardrail
+      await runTest('Test 14: Health Assistant non-diagnostic refusal guardrail', async () => {
+        const assistant = new HealthAssistant();
+        const res = await assistant.processMessage('Please diagnose if this cough means I have lung cancer');
+        if (!res) throw new Error('No response returned');
+        if (res.type !== 'guardrail_diagnosis') throw new Error(`Expected guardrail_diagnosis, got ${res.type}`);
       });
 
-      // Test 14: Misspelled medical term ("hipermetropia")
-      tests.push({
-        name: "Test 14: Misspelled term 'hipermetropia' (Normalized to Hypermetropia)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("hipermetropia", "en");
-          assert(res.success === true, "Should normalize and succeed");
-          assert(/farsighted|eye/i.test(res.whatItMeans), "Must describe farsightedness");
-          return `Correctly resolved misspelling to: "${res.term}"`;
-        }
+      // Test 15: Health Assistant prescription dosage refusal guardrail
+      await runTest('Test 15: Health Assistant prescription dosage refusal guardrail', async () => {
+        const assistant = new HealthAssistant();
+        const res = await assistant.processMessage('How many milligrams of amoxicillin should I take?');
+        if (!res) throw new Error('No response returned');
+        if (res.type !== 'guardrail_prescription') throw new Error(`Expected guardrail_prescription, got ${res.type}`);
       });
 
-      // Test 15: Non-medical query ("javascript programming")
-      tests.push({
-        name: "Test 15: Non-medical query rejection (Zero hallucination guardrail)",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("javascript programming docker cloud", "en");
-          assert(res.success === false, "Must reject non-medical query");
-          assert(res.validation_status === 'NON_MEDICAL', "Validation status must be NON_MEDICAL");
-          assert(res.identified_condition === null, "Must NOT fabricate medical condition");
-          return `Safely rejected: "${res.error_message}"`;
-        }
+      // Test 16: Health Assistant offers hospital & appointment follow-up
+      await runTest('Test 16: Health Assistant offers hospital & appointment follow-up', async () => {
+        const assistant = new HealthAssistant();
+        const res = await assistant.processMessage('What are the symptoms and stages of type 2 diabetes?');
+        if (!res) throw new Error('No response returned');
+        if (!res.offerHospitalAssistance) throw new Error('Assistant did not offer hospital assistance');
       });
 
-      // Test 16: Unknown or unverifiable term ("xyloquanticosis")
-      tests.push({
-        name: "Test 16: Unknown term rejection ('xyloquanticosis')",
-        run: async () => {
-          const res = await simplifier.simplifyTextAsync("xyloquanticosis", "en");
-          assert(res.success === false, "Must reject unknown term");
-          assert(res.validation_status === 'UNVERIFIABLE', "Validation status must be UNVERIFIABLE");
-          assert(res.identified_condition === null, "Must NOT invent disease for unknown query");
-          return `Safely handled: "${res.error_message}"`;
-        }
+      // Test 17: Multilingual translations exist for key features
+      await runTest('Test 17: UI_TRANSLATIONS contains appointments, xray, and blood test keys', () => {
+        if (!UI_TRANSLATIONS.en.navAppointments) throw new Error('navAppointments missing in English');
+        if (!UI_TRANSLATIONS.en.navXray) throw new Error('navXray missing in English');
+        if (!UI_TRANSLATIONS.en.navBloodTest) throw new Error('navBloodTest missing in English');
+        if (!UI_TRANSLATIONS.hi.navAppointments) throw new Error('navAppointments missing in Hindi');
+        if (!UI_TRANSLATIONS.kn.navAppointments) throw new Error('navAppointments missing in Kannada');
       });
 
-      // Test 17: Contradictory passage rejection
-      tests.push({
-        name: "Test 17: Contradictory passage rejection (Eye query with Pulmonary clot candidate)",
-        run: async () => {
-          // Synthesize a candidate response that falsely claims hypermetropia is a lung clot
-          const fraudulentCandidate = {
-            term: "Pulmonary Embolism",
-            category: "Vascular & Pulmonology",
-            whatItMeans: "A serious blood clot in the lungs blocking blood flow."
-          };
-          const val = simplifier.validateMedicalTopicConsistency("Hypermetropia", fraudulentCandidate);
-          assert(val.isValid === false, "Must REJECT contradictory candidate");
-          assert(val.status === 'REJECTED_MISMATCH', "Must flag as REJECTED_MISMATCH");
-          return `Contradiction detected: ${val.errorMessage}`;
-        }
+      // Test 18: Emergency contact numbers integrity
+      await runTest('Test 18: Emergency hotline 112 / 108 verification', () => {
+        const hospital = new NearbyHospitalsManager();
+        const vHosp = hospital.verifiedHospitals[0];
+        if (!vHosp || !vHosp.phone) throw new Error('Apex hospital missing verified phone');
+        if (vHosp.phone === '112') throw new Error('Hospital phone falsely set to 112 instead of hospital line');
       });
 
-      // Test 18: Deliberately incorrect AI answer (Inverted blood pressure)
-      tests.push({
-        name: "Test 18: Inverted medical concept rejection (Hypotension confused with Hypertension)",
-        run: async () => {
-          const badCandidate = {
-            term: "Hypertension (High Blood Pressure)",
-            category: "Cardiology",
-            whatItMeans: "Blood is pushing with high force against artery walls."
-          };
-          const val = simplifier.validateMedicalTopicConsistency("Hypotension", badCandidate);
-          assert(val.isValid === false, "Must REJECT inverted pressure definition");
-          return `Safely caught inverted concept: ${val.errorMessage}`;
-        }
-      });
+      // Summary
+      summaryEl.className = failCount === 0 ? 'all-pass' : 'has-fail';
+      summaryEl.innerHTML = `Completed: ${passCount} Passed, ${failCount} Failed. Total: ${passCount + failCount}`;
+    }
 
-      // Test 19: Offline fallback (Zero-dependency local clinical knowledge)
-      tests.push({
-        name: "Test 19: Offline / Standalone browser execution without API key",
-        run: async () => {
-          // Calling without API key and no server proxy
-          const res = simplifier.simplifyText("Hypermetropia", "en");
-          assert(res.success === true, "Local knowledge base must function zero-dependency");
-          assert(/farsighted/i.test(res.whatItMeans), "Local definition must be accurate");
-          return `Offline execution 100% verified: "${res.simpleName}"`;
-        }
-      });
-
-      // Test 20: Consecutive queries (State leakage and cache safety)
-      tests.push({
-        name: "Test 20: Consecutive searches (Hypermetropia -> Pulmonary Embolism -> Myopia)",
-        run: async () => {
-          const r1 = await simplifier.simplifyTextAsync("Hypermetropia", "en");
-          assert(/farsighted/i.test(r1.whatItMeans), "Step 1 must be farsightedness");
-          assert(!/clot|lung/i.test(r1.whatItMeans), "Step 1 must not contain clot");
-
-          const r2 = await simplifier.simplifyTextAsync("Pulmonary Embolism", "en");
-          assert(/clot|lung|pulmonary/i.test(r2.whatItMeans), "Step 2 must be clot in lungs");
-          assert(!/eye|farsighted/i.test(r2.whatItMeans), "Step 2 must not contain eye");
-
-          const r3 = await simplifier.simplifyTextAsync("Myopia", "en");
-          assert(/nearsighted/i.test(r3.whatItMeans), "Step 3 must be nearsightedness");
-          assert(!/farsighted|clot/i.test(r3.whatItMeans), "Step 3 must not contain farsightedness or clot");
-
-          return `Consecutive pipeline verified with zero state leakage across 3 queries!`;
-        }
-      });
-
-      // Execute all tests
-      const testReport = [];
-      for (const t of tests) {
-        const item = document.createElement('div');
-        item.className = 'test-box';
-        try {
-          const detail = await t.run();
-          passedCount++;
-          item.className += ' pass';
-          item.innerHTML = `<strong>✅ ${t.name}</strong><pre>${detail}</pre>`;
-          testReport.push({ test: t.name, status: "PASS", detail });
-        } catch (err) {
-          item.className += ' fail';
-          item.innerHTML = `<strong>❌ ${t.name}</strong><pre>Error: ${err.message}</pre>`;
-          testReport.push({ test: t.name, status: "FAIL", error: err.message });
-        }
-        resultsDiv.appendChild(item);
-      }
-
-      const summaryDiv = document.getElementById('summary');
-      const allPassed = passedCount === tests.length;
-      summaryDiv.style.background = allPassed ? '#064e3b' : '#7f1d1d';
-      summaryDiv.innerHTML = `
-        <span style="font-size: 16px;">${allPassed ? '🎉 ALL 20 TESTS PASSED' : '⚠️ SOME TESTS FAILED'}</span><br>
-        Score: ${passedCount} / ${tests.length} tests passed (100% Pass Rate).
-      `;
-
-      window.__testResults = {
-        total: tests.length,
-        passed: passedCount,
-        allPassed,
-        report: testReport
-      };
-    })();
+    window.addEventListener('DOMContentLoaded', executeAllTests);
   </script>
 </body>
 </html>

@@ -1,13 +1,29 @@
 @echo off
-title Launching MediBridge AI...
-echo ========================================================
-echo               MediBridge AI - Launching
-echo       Healthcare Accessibility & Literacy Assistant
-echo ========================================================
+setlocal
+title MediBridge AI - Healthcare Accessibility Assistant
+echo ==============================================================================
+echo             MediBridge AI - Healthcare Accessibility Assistant
+echo ==============================================================================
 echo.
-echo Opening MediBridge AI in your default web browser...
-start "" "%~dp0index.html"
+echo Starting MediBridge AI native server and backend services...
+echo (Port: 8080, User Data: data\medibridge.json)
 echo.
-echo App launched successfully! You can keep this window closed.
-timeout /t 3 >nul
-exit
+
+where powershell >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    echo Launching native Windows backend server via PowerShell...
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-server.ps1"
+    if %ERRORLEVEL% neq 0 (
+        echo.
+        echo [Notice] Server stopped or encountered an issue.
+        echo Opening frontend directly in default browser...
+        start "" "%~dp0index.html"
+    )
+) else (
+    echo PowerShell not found in PATH. Opening frontend directly in default browser...
+    start "" "%~dp0index.html"
+)
+
+echo.
+echo MediBridge AI session closed.
+pause

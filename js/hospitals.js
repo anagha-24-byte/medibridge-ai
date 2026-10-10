@@ -916,6 +916,16 @@ class NearbyHospitalsManager {
     const cleanNum = phoneStr.replace(/[^0-9+]/g, '');
     return cleanNum ? `tel:${cleanNum}` : null;
   }
+  /**
+   * Helper Aliases for API compatibility
+   */
+  getNearbyHospitals(lat, lon, radiusKm = 10) {
+    return this.searchHospitals(lat, lon, radiusKm);
+  }
+
+  resolveLocationQuery(query) {
+    return this.geocodeQuery(query);
+  }
 }
 
 if (typeof window !== 'undefined') {

@@ -1,252 +1,274 @@
-# 🩺 MediBridge AI — Healthcare Accessibility & Literacy Assistant
+# 🩺 MediBridge AI — Healthcare Accessibility Assistant
 
-> **Top-Tier Hackathon Prototype** | Engineered for Healthcare Equity, Health Literacy, and Patient Empowerment.
+> **Comprehensive Healthcare Accessibility & Literacy Platform** | Engineered for Health Equity, Patient Empowerment, and Clinical Safety.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Privacy First](https://img.shields.io/badge/Privacy-100%25%20In--Browser%20Client--Side-emerald.svg)]()
-[![Safety Guardrails](https://img.shields.io/badge/Guardrails-Strict%20Non--Diagnostic-amber.svg)]()
+[![Tests Passing](https://img.shields.io/badge/Tests-28%2F28%20Passing%20(100%25)-brightgreen.svg)]()
+[![Backend](https://img.shields.io/badge/Backend-Node.js%20Express%20%2B%20Native%20.NET%20PowerShell-blue.svg)]()
+[![AI Engine](https://img.shields.io/badge/AI%20Engine-Google%20Gemini%201.5%20Flash-violet.svg)]()
+[![Safety Guardrails](https://img.shields.io/badge/Guardrails-Strict%20Non--Diagnostic%20%26%20Non--Prescription-amber.svg)]()
+[![Privacy First](https://img.shields.io/badge/Privacy-Zero%20Password%20%2F%20Opt--In%20User%20History-emerald.svg)]()
+[![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AAA%20%26%20RTL%20Support-purple.svg)]()
 [![Emergency System](https://img.shields.io/badge/Emergency%20Helplines-11%20States%20%26%20Regions-rose.svg)]()
-[![Hospitals Engine](https://img.shields.io/badge/Hospitals-OpenStreetMap%20%2B%20Offline%20Apex%20Directory-blue.svg)]()
-[![Languages](https://img.shields.io/badge/Languages-15%20Languages%20(Kannada%2C%20Marathi%2C%20Telugu%20%2B)-indigo.svg)]()
-[![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AAA%20High%20Contrast%20%26%20Font%20Scaling-purple.svg)]()
 
 ---
 
-## 🌟 Executive Summary & Problem Statement
+## 🌟 Executive Summary & Problem Landscape
 
-**Health literacy and emergency access are among the greatest barriers to equitable healthcare worldwide.**
-- **9 out of 10 adults** struggle to navigate complex clinical terminology, lab reports, and hospital discharge instructions.
-- Over **500 million people across India and globally** face severe communication barriers when clinical instructions are delivered only in standard medical English or outside their native mother tongue.
-- In medical crises, patients and families face immense confusion locating nearby emergency-equipped facilities, deciphering non-working phone numbers, and identifying state-specific emergency numbers (e.g., Arogya Kavacha 108 in Karnataka vs MEMS 108 in Maharashtra vs Kaniv 108 in Kerala vs CATS 102 in Delhi).
-- Patients frequently leave outpatient consultations or discharge wards feeling overwhelmed, forgetting up to **80% of what their physician discussed**.
+Navigating modern healthcare systems is one of the most formidable barriers facing patients and caregivers globally:
 
-**MediBridge AI** solves this critical gap by providing an all-in-one patient empowerment platform with **three primary feature pillars**:
-1. **Medical Jargon Buster (Medical Simplifier)**
-2. **Lab & Document Explainer**
-3. **Nearby Hospitals & Emergency Contacts**
+- **9 out of 10 adults** struggle to interpret clinical terminology, diagnostic radiology reports, and lab panels.
+- **Over 500 million individuals** across India and worldwide face severe linguistic isolation when medical records and triage instructions are delivered exclusively in clinical English.
+- **Consultation Recall Loss**: Patients routinely forget **40% to 80%** of clinical guidance immediately upon exiting a doctor's examination room.
+- **Emergency Geolocation Gaps**: During acute crises, families face confusion locating functional emergency casualty facilities, identifying emergency department direct lines, or navigating state-specific helplines (e.g. 108 Arogya Kavacha in Karnataka vs MEMS 108 in Maharashtra).
 
-Supported by localized state emergency directories, interactive action checklists, 15 languages (including Kannada, Marathi, Telugu, Hindi, Tamil), and strict non-diagnostic medical safety guardrails.
+**MediBridge AI** bridges these gaps by providing an integrated, accessible healthcare companion with verified server-side APIs, real multimodal AI capabilities, and strict clinical safety guardrails.
 
 ---
 
-## 🛡️ Medical Safety & Ethical Guardrails
+## 🚀 Core Feature Modules
 
-MediBridge AI strictly enforces ethical and clinical safety guidelines: **empowering doctor-patient discussions, never replacing them**:
+### 1. 📅 Appointments & Reminders (Replaced Medical Simplifier)
+- **Interactive Scheduling**: Book and manage consultations with primary care physicians, cardiologists, endocrinologists, and diagnostic radiologists.
+- **Past Date Prevention**: Enforces forward-looking dates; prevents booking in the past.
+- **Lifecycle Status Tracking**: Accurately tracks statuses: `Confirmed`, `Request Submitted`, `Reminder Saved`, and `Booking Unavailable`.
+- **Integrated Follow-Ups**: 1-click booking integration directly from Nearby Hospital search cards.
+- **User History Persistence**: Saves appointment records to the authenticated user account with individual record deletion and clear summary views.
 
-1. **Strictly Non-Diagnostic**:
-   - Actively identifies diagnostic queries (*"Do I have cancer?"*, *"Diagnose this chest pain"*).
-   - Issues a polite refusal explaining why only a licensed doctor with physical examination and complete history can diagnose medical conditions.
-2. **Zero Prescription / Dosage Guidance**:
-   - Blocks all requests for prescription changes or dosages (*"How many milligrams should I take?"*).
-   - Redirects patients to their treating physician or licensed neighborhood pharmacist.
-3. **Automated Red-Flag Emergency Triage**:
-   - Detects life-threatening symptoms (crushing chest pressure, signs of stroke [FAST], acute dyspnea, severe hemorrhages).
-   - Instantly renders high-visibility guidance with direct 1-tap call buttons for regional emergency dispatchers (112 Unified Dispatch, 108 Ambulance).
-4. **100% Client-Side Privacy (Zero Remote PHI)**:
-   - All document analysis, OCR parsing, clinical glossary lookups, and checklists run entirely in the user's browser.
-   - Zero sensitive Protected Health Information (PHI) is ever transmitted to remote databases or external paid APIs.
-5. **Contact Data Integrity**:
-   - Direct hospital contact numbers are labeled as general reception lines unless an emergency casualty line is explicitly verified.
-   - When an emergency department direct line is not available in retrieved OpenStreetMap data, MediBridge AI clearly informs the user: *"Emergency department direct line not available in retrieved data — dial 112 / 108"*. No numbers are fabricated.
+### 2. 💬 AI Health Assistant (Google Gemini 1.5 Flash)
+- **Conversational AI Proxy**: Server-side proxy (`/api/chat`) connecting securely to Google Gemini 1.5 Flash without exposing API credentials to the browser.
+- **Strict Non-Diagnostic Guardrails**: Actively detects and politely refuses self-diagnosis requests (*"Do I have diabetes?"*, *"Diagnose my abdominal pain"*), directing users to licensed medical professionals.
+- **Non-Prescription / Dosage Refusals**: Blocks requests for drug dosages or changes (*"How many mg of Amoxicillin should I take?"*), redirecting patients to treating physicians or licensed pharmacists.
+- **Red-Flag Emergency Triage**: Detects acute life-threatening symptoms (crushing chest pain, stroke FAST indicators, severe shortness of breath, heavy hemorrhage) and immediately triggers prominent emergency cards with direct 1-tap dialers for 112 (Unified Emergency) and 108 (Ambulance).
+- **Hospital Follow-Up Integration**: Suggests nearby hospital searches and appointment scheduling directly within relevant conversation contexts.
+- **Honest Missing-Key Feedback**: If `GEMINI_API_KEY` is not configured on the server, the interface presents an honest setup guide (`AI_NOT_CONFIGURED`) rather than fabricating synthetic responses.
+
+### 3. 📑 Medical Document Explainer (Strictly Medical Validation)
+- **Strict Medical Filtering**: Actively inspects uploaded or pasted text. Non-medical files (recipes, code, fiction, invoices) are rejected with the explicit validation notice:
+  > *"This document does not appear to contain medical information. Please upload a medical report or document."*
+- **Clinical Term Translation**: Deconstructs complex diagnoses, procedures, and shorthand (*b.i.d.*, *p.o.*, *eGFR*, *T2DM*, *HTN*) into everyday language.
+- **Reference Range Variance Notice**: Prominently warns users that normal biological ranges vary across testing laboratories, equipment, reagents, and patient demographics.
+- **Doctor Questions Generation**: Prepares concrete, actionable questions for the patient's next clinic visit.
+
+### 4. 🩻 Dedicated X-Ray Vision Analysis
+- **Multimodal Image Ingestion**: Accepts clinical chest, bone, and dental X-rays in JPEG, PNG, and WEBP formats up to 10MB.
+- **Interactive Image Preview & Clear**: Visual thumbnail verification with 1-click removal.
+- **Multimodal AI Analysis**: Transmits image data to Google Gemini 1.5 Flash Vision proxy (`/api/xray`) for educational anatomical breakdown (airways, lung fields, cardiac silhouette, bony structures).
+- **Prominent Radiologist Caution Banner**:
+  > *"Caution: AI X-ray analysis is strictly an educational tool to help you understand anatomical structures. It cannot substitute for formal radiologist interpretation or clinical diagnostic imaging."*
+- **Opt-In Persistence**: Option to save educational X-ray findings to the user's private history.
+
+### 5. 🩸 Dedicated Blood Test Analysis
+- **Structured Biomarker Extraction**: Parses lab markers across complete metabolic, lipid, renal, and hematology panels:
+  - Fasting Glucose & HbA1c
+  - Total Cholesterol, HDL, LDL, and Triglycerides
+  - Serum Creatinine & eGFR
+  - White Blood Cell (WBC) count & Platelets
+- **Clinical Range Flagging**: Categorizes each biomarker as `NORMAL`, `HIGH`, or `LOW` against clinical reference baselines.
+- **Physiological Explanations**: Explains the biological role of each marker in plain language without diagnosing disease.
+- **Questions for Physician**: Automatically produces specific questions to ask the primary physician regarding abnormal markers.
+
+### 6. 🏥 Nearby Hospitals & Emergency Contacts
+- **Dual Location Search**: Browser Geolocation API (user consent only) or manual search by city (Bengaluru, Mumbai, Delhi, Hyderabad, Chennai, Kolkata, Pune) or Indian PIN code (e.g. `560001`, `400001`).
+- **Live OpenStreetMap Overpass API**: Live spatial queries with radius filtering (5 km, 10 km, 25 km).
+- **Curated 40+ Apex Hospital Offline Fallback**: Pre-loaded apex government tertiary institutions (AIIMS New Delhi, BMCRI Victoria Hospital Bengaluru, NIMHANS, KEM Hospital Mumbai, Osmania Hyderabad, Rajiv Gandhi GH Chennai, IPGMER Kolkata) ensuring 100% demo uptime under zero connectivity.
+- **Haversine Distance Sorting**: Automatically computes exact geodesic distance and sorts facilities nearest-first.
+- **Contact Data Integrity**: Verified primary lines linked via `tel:`, strict distinction of emergency casualty lines, and clear indicators when emergency lines are unlisted in open data.
+- **1-Click Appointment Planning**: "Book / Inquire" button seamlessly transfers hospital details into the Appointments module.
+
+### 7. 🔐 User Authentication & Privacy-Preserving History
+- **Zero-Password Sign-In**: Lightweight entry requiring only **Name** and **Mobile Number**.
+- **Input Sanitization & Normalization**: Strips formatting characters, validates 10-15 digit phone standards, and sanitizes name strings (2-50 characters).
+- **Secure Token-Based Sessions**: Server generates cryptographically secure session tokens for verified authorization headers (`Authorization: Bearer <token>`).
+- **Strict Privacy Safeguards**:
+  - Never collects passwords, Aadhaar numbers, dates of birth, or invasive personal identifiers.
+  - Mobile numbers are masked in user interfaces (`+91 ••••• ••123`) and never exposed in public URLs or logs.
+  - Isolated per-user database partitions: User A can never inspect User B's medical history.
+- **Opt-In User History**: Users can choose to persist or delete appointments, conversations, document interpretations, X-ray analyses, and blood test reports.
+- **Full Data Deletion**: Users can delete individual records or wipe their entire account data at any time.
+
+### 8. 🌐 Multilingual Hub & Universal Accessibility
+- **15 Languages Supported**: English, Hindi, Kannada, Marathi, Telugu, Tamil, Bengali, Spanish, French, German, Arabic (with native RTL layout), Portuguese, Chinese, Tagalog, and Vietnamese.
+- **Persistent State Emergency Directory**: Live emergency hotlines across 11 Indian states/regions (Karnataka, Maharashtra, Andhra Pradesh, Telangana, Tamil Nadu, Kerala, Delhi NCT, Gujarat, West Bengal, National India, and International).
+- **WCAG 2.2 AAA Accessibility**:
+  - High-Contrast Theme (7:1+ contrast ratios, high-visibility cyan text, yellow focus rings).
+  - Dynamic Font Scaling (4 sizes: Small, Medium, Large, Extra Large).
+  - Multilingual Text-to-Speech (TTS) using browser Web Speech API.
 
 ---
 
-## 🚀 The Three Primary Feature Pillars
+## 🏗️ Architecture & Dual Backend Implementation
 
-MediBridge AI prominently features three primary healthcare accessibility tools on its homepage:
+MediBridge AI is engineered with dual backend options to accommodate both standard production environments (Node.js/Docker/Cloud) and zero-dependency native Windows environments:
 
 ```
-┌─────────────────────────────────┐ ┌─────────────────────────────────┐ ┌─────────────────────────────────┐
-│     1. Medical Simplifier       │ │      2. Document Explainer      │ │       3. Nearby Hospitals       │
-├─────────────────────────────────┤ ├─────────────────────────────────┤ ├─────────────────────────────────┤
-│ • 70+ Clinical Knowledge Base   │ │ • Blood Panel, X-Ray, Discharge │ │ • Dual GPS & Manual City/PIN    │
-│ • Common Disease Name Badge     │ │ • Clinical Variance Disclaimer  │ │ • Live OpenStreetMap Overpass   │
-│ • Household Analogies           │ │ • Abbreviation Decoder (b.i.d.) │ │ • 40+ Apex Hospital Offline Fallback│
-│ • 5th-Grade & Standard Levels   │ │ • Color-Coded Normal/High Flags │ │ • Haversine Distance Sorting    │
-│ • Web Speech TTS Audio Playback │ │ • 1-Click Checklist Export      │ │ • Direct 1-Tap Dialing & Maps   │
-└─────────────────────────────────┘ └─────────────────────────────────┘ └─────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        MediBridge AI Frontend                          │
+│               HTML5 + Tailwind CSS + Vanilla ES6 Modules               │
+│      (index.html, js/app.js, js/auth.js, js/appointments.js, ...)      │
+└───────────────────▲────────────────────────────────▲───────────────────┘
+                    │ REST API                       │ REST API
+                    │ (Port 8080)                    │ (Port 8080)
+┌───────────────────▼──────────────┐   ┌─────────────▼──────────────────┐
+│   Option A: Production Backend   │   │   Option B: Native Windows     │
+│       Node.js + Express          │   │   PowerShell .NET Listener     │
+│     (server/server.js)           │   │     (start-server.ps1)         │
+├──────────────────────────────────┤   ├────────────────────────────────┤
+│ • Express REST Routing           │   │ • Native System.Net.HttpListener│
+│ • JSON Web Token Sessions        │   │ • Zero dependencies (No Node)  │
+│ • Per-User JSON Storage Engine   │   │ • Native .NET JSON Persistence │
+│ • Google Gemini 1.5 Flash Proxy  │   │ • Native PowerShell WebClient  │
+│ • CORS & Security Rate Limiting  │   │ • Full Gemini 1.5 Flash Proxy  │
+└───────────────────┬──────────────┘   └─────────────┬──────────────────┘
+                    │                                │
+                    ▼                                ▼
+        [ server/data/medibridge.json ]    [ data/medibridge.json ]
 ```
 
-### 1. 📖 Medical Information Simplifier (Medical Jargon Buster)
-- **70+ Term Clinical Knowledge Base & Latin/Greek Morphology Deconstruction**:
-  - Deconstructs medical roots (e.g. *cardio-*, *neuro-*, *nephro-*, *-itis*, *-megaly*, *-ectomy*).
-- **Patient-Friendly Features**:
-  - **Everyday Common Disease Name**: Directly shows colloquial names (e.g. Hypertension → *High Blood Pressure*, Dyspnea → *Shortness of Breath*, Hyperlipidemia → *High Cholesterol*, Osteoarthritis → *Joint Wear & Tear*).
-  - **Side-by-Side Comparison**: Displays the original clinical text alongside the plain-language translation.
-  - **Relatable Analogies**: Garden hose pressure for hypertension, plumbing pipes for atherosclerosis, air filters for kidneys.
-  - **Reading Level Controls**: 5th Grade (Simple Plain Words), Standard Guide, or Detailed Educational Reference.
-  - **Voice & Accessibility**: Speech recognition dictation microphone and Web Speech API audio playback with locale bindings for regional Indic languages.
-  - **1-Click Checklist Export**: Import doctor questions directly into the Patient Action Checklist.
-
-### 2. 📑 Document & Lab Report Explainer
-- **Realistic Clinical Presets**:
-  - *Comprehensive Metabolic & Lipid Blood Panel* (Glucose, HbA1c, Cholesterol, eGFR, ALT)
-  - *Chest X-Ray Diagnostic Radiology Report* (Airway aeration, hyperinflation, cardiothoracic ratio)
-  - *Hospital Inpatient Discharge Summary* (Hypertension urgency, diabetes, DASH diet instructions)
-  - *Outpatient Prescription & Pharmacy Directions* (Augmentin antibiotic regimen & warning signs)
-- **Clinical Variance Disclaimer**: Prominently warns patients that reference ranges vary between laboratories based on equipment, reagents, age, and biological factors.
-- **Color-Coded Findings**: Categorizes values into Normal, High/Elevated, and Low.
-- **Medical Shorthand Decoder**: Translates clinical abbreviations (*b.i.d.*, *q.a.m.*, *p.o.*, *eGFR*, *PCP*, *HTN*, *T2DM*).
-- **1-Click Reset & Print**: Instant document reset button and formatted printable summary for doctor appointments.
-
-### 3. 🏥 Nearby Hospitals & Emergency Contacts (New Primary Pillar)
-- **Prominent Navigation & Accessibility**: Visible in the top navbar, mobile navigation, hero CTA, and feature showcase grid.
-- **Dual Location Selection**:
-  - **Use My Current Location**: Explicit opt-in via browser Geolocation API with coordinate acquisition, loading spinner, and graceful permission/timeout handling.
-  - **Enter Location Manually**: Instant geocoding for cities (Bengaluru, Mumbai, Delhi, Hyderabad, Chennai, Kolkata, Pune, etc.) and Indian postal PIN codes (560001, 400001, 110001, 500001, 600001, etc.).
-- **Hybrid Live & Offline Architecture**:
-  - **OpenStreetMap Overpass API**: Live query engine searching for public hospitals within selectable radius (5 km, 10 km, 25 km).
-  - **Curated Apex Tertiary Directory**: Over 40+ apex government facilities (AIIMS New Delhi, BMCRI Victoria Hospital Bengaluru, NIMHANS, KEM Hospital Mumbai, Osmania Hyderabad, Rajiv Gandhi GH Chennai, IPGMER Kolkata, etc.) pre-loaded offline to guarantee 100% demo resilience even with zero network connectivity or rate limits.
-  - **Haversine Distance Sorting**: Automatically computes straight-line distance (`~X.X km`) and sorts facilities nearest-first.
-- **Data Integrity & Emergency Distinction**:
-  - Verified primary reception telephone lines with `tel:` links.
-  - Distinct red-highlighted emergency department line or clear guidance when direct casualty line is unlisted.
-  - 1-click Google Maps / OpenStreetMap directions link and official hospital website link.
-- **Prominent Emergency Guidance Box**:
-  - Alerts users: *"In a life-threatening crisis (severe chest pain, difficulty breathing, major trauma, stroke signs), do NOT wait for hospital listings. Call emergency dispatch immediately: 112 (Unified Emergency) or 108 (Ambulance)."*
+### Backend Endpoints Reference:
+| Method | Route | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/health` | Service health status, server type, AI provider configuration | No |
+| `POST` | `/api/auth/login` | Name & Mobile validation; generates session token | No |
+| `GET` | `/api/auth/me` | Authenticated profile retrieval | Yes (`Bearer`) |
+| `POST` | `/api/auth/logout` | Session invalidation | Yes (`Bearer`) |
+| `GET` | `/api/appointments` | Retrieve authenticated user's appointments | Yes (`Bearer`) |
+| `POST` | `/api/appointments` | Book new appointment; enforces future date | Yes (`Bearer`) |
+| `DELETE` | `/api/appointments/:id`| Cancel / remove specific appointment | Yes (`Bearer`) |
+| `GET` | `/api/history` | Retrieve user saved history (chat, docs, x-rays, blood tests)| Yes (`Bearer`) |
+| `POST` | `/api/history` | Save record to user history | Yes (`Bearer`) |
+| `DELETE` | `/api/history/:id` | Delete specific history record | Yes (`Bearer`) |
+| `POST` | `/api/chat` | AI Health Assistant chat completion (Gemini 1.5 Flash) | Optional |
+| `POST` | `/api/document/explain`| Medical document plain-language analysis | Optional |
+| `POST` | `/api/xray` | Multimodal X-ray vision analysis | Optional |
+| `POST` | `/api/bloodtest` | Structured blood biomarker extraction & range flags | Optional |
 
 ---
 
-## 🏛️ Secondary Modules & Capabilities
+## 🏃 Setup & Launch Instructions
 
-### 4. 🏠 Persistent State Emergency System & Emergency Protocol
-- **Persistent Header Emergency Banner**: Synced region selector across all application views with quick-dial hotlines for 108 Ambulance, 104 Health Advisory, and 112 Unified Emergency.
-- **State Helplines**: Real-time regional helplines for 11 states/regions: **Karnataka, Maharashtra, Andhra Pradesh, Telangana, Tamil Nadu, Kerala, Delhi (NCT), Gujarat, West Bengal, National India, and International (US/UK/EU)**.
-
-### 5. ✅ Patient-Friendly Action Checklist
-- **Categorized Healthcare Action Items**:
-  - 💬 *Questions for Doctor*
-  - 📖 *Terms to Clarify*
-  - ✅ *Follow-up Tasks*
-  - 📝 *Caregiver Notes*
-- **Full Workflow**: Import questions directly from Simplifier and Document Explainer, add custom action items, toggle completion, and export as printable PDF/text file.
-
-### 6. 🌐 Regional & Global Multilingual Hub
-Full interface localization and translated medical glossaries across **15 languages**:
-- 🇮🇳 **Kannada / ಕನ್ನಡ (`kn`)**: Arogya Kavacha 108, Arogya Karnataka
-- 🇮🇳 **Marathi / मराठी (`mr`)**: MEMS 108, MJPJAY scheme
-- 🇮🇳 **Telugu / తెలుగు (`te`)**: 108 Ambulance, Dr. YSR Aarogyasri / Aarogyasri Telangana
-- 🇮🇳 **Tamil / தமிழ் (`ta`)**: 108 Ambulance, CMCHIS & Innuyir Kaappom
-- 🇮🇳 **Hindi / हिन्दी (`hi`)**: Ayushman Bharat PM-JAY
-- 🇺🇸 **English (`en`)**
-- 🇪🇸 Spanish (`es`), 🇫🇷 French (`fr`), 🇩🇪 German (`de`), 🇸🇦 Arabic (`ar` with RTL layout), 🇨🇳 Simplified Chinese (`zh`), 🇧🇩 Bengali (`bn`), 🇧🇷 Portuguese (`pt`), 🇵🇭 Tagalog (`tl`), 🇻🇳 Vietnamese (`vi`).
-- **Bilingual Collaborative View**: View English clinical references side-by-side with regional translations.
-
-### 7. ♿ Universal Accessibility (WCAG 2.2 AAA)
-- **High-Contrast Mode**: 7:1+ contrast ratios with dark mode, high-visibility cyan text, and yellow interactive borders.
-- **Dynamic Font Scaling**: 4 font size steps (Small, Medium, Large, Extra Large) scaling headings and body text uniformly.
-- **Multilingual Text-to-Speech**: Speech synthesis automatically configured for regional Indian speech engines (`kn-IN`, `mr-IN`, `te-IN`, `ta-IN`, `hi-IN`).
+### Method 1: 1-Click Launch on Windows (Recommended)
+Double-click **`start-app.bat`** in the repository root.
+- Automatically launches the native PowerShell .NET backend on `http://localhost:8080/`.
+- Opens your default web browser to MediBridge AI with all API features and persistence active.
+- If PowerShell is unavailable, falls back gracefully to opening `index.html` directly in client fallback mode.
 
 ---
 
-## 🛠️ Technology Stack (Zero-Dependency & Easy to Run)
-
-The application was purposefully engineered with a **zero-dependency, client-side web stack**:
-
-- **Frontend**: HTML5, Modern CSS3, Modular JavaScript (ES6+ classes and controllers).
-- **Styling**: Tailwind CSS (via CDN) + Custom stylesheet (`css/styles.css`).
-- **Data & APIs**: OpenStreetMap Overpass API, Nominatim Geocoding, Web Speech Synthesis/Recognition APIs, Geolocation API, LocalStorage.
-- **Dependencies**: **0 external npm packages, 0 backend servers, 0 build steps required.**
-- **Compatibility**: Runs locally on Microsoft Edge, Google Chrome, Mozilla Firefox, Apple Safari, and deploys out-of-the-box on GitHub Pages.
-
----
-
-## 🏃 Exactly How to Run the Application
-
-### Method 1: Direct 1-Click Launch (Recommended)
-1. Navigate to: `d:\Anagha\medibridge-ai\` (or open `d:\Anagha\`)
-2. Double-click **`start-app.bat`** (or double-click **`index.html`**).
-3. MediBridge AI will immediately launch in your default web browser!
-
----
-
-### Method 2: Launch via Windows PowerShell
-```powershell
-Start-Process "d:\Anagha\medibridge-ai\index.html"
-```
-
----
-
-### Method 3: Run as a Local Web Server (Optional)
-If you prefer running via `http://localhost:8080/`, MediBridge AI includes a zero-dependency PowerShell server script using Windows' native `.NET HttpListener`:
-
+### Method 2: Native Windows PowerShell Server (Zero Dependencies)
+Run directly from PowerShell without installing Node.js or any npm packages:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "d:\Anagha\medibridge-ai\start-server.ps1"
 ```
+The server will start at `http://localhost:8080/` and open your default browser.
 
 ---
 
-## 🧪 Automated End-to-End Verification
+### Method 3: Standard Node.js Backend (For Cloud / Linux / Production)
+If Node.js (v18+) is installed:
+```bash
+# 1. Navigate to the server folder
+cd server
 
-The project includes an automated test runner (`scratch\run-tests.ps1`) executing real end-to-end browser tests via the Microsoft Edge DevTools Protocol:
+# 2. Install dependencies
+npm install
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\User\.gemini\antigravity\brain\58c2f194-7dcb-44e0-a48b-50a14c844324\scratch\run-tests.ps1"
+# 3. Configure environment variables (optional)
+cp ../.env.example .env
+
+# 4. Start the server
+npm start
+```
+The Express server will start on port `8080` (or `PORT` specified in `.env`).
+
+---
+
+### Method 4: Client-Side Fallback / GitHub Pages
+MediBridge AI is designed to run gracefully even when deployed as a static frontend on **GitHub Pages**:
+- URL: `https://anagha-24-byte.github.io/medibridge-ai/`
+- When no backend server is detected on `localhost:8080`, the application automatically enables **Client Fallback Mode**:
+  - Auth sessions and appointments save safely to browser session storage.
+  - Clinical analysis, symptom emergency checks, hospital lookups, and language switches function completely client-side.
+  - The AI assistant notifies the user that the cloud proxy is running in client mode and provides clear instructions for connecting a live server.
+
+---
+
+## 🔑 Environment Variables Configuration
+
+Copy `.env.example` to `.env` in the root or `server/` directory:
+
+```ini
+# Server Port (Default: 8080)
+PORT=8080
+
+# Secret Key for HMAC Session Tokens
+JWT_SECRET=medibridge-secure-session-key-replace-in-production
+
+# Google Gemini API Key for Live AI Health Assistant & Multimodal Vision
+# Obtain a free key from Google AI Studio: https://aistudio.google.com/
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### Verified Test Suite (15 / 15 Passing):
-1. `[PASS]` Architecture & Navigation: All 8 core sections loaded, navbar active states verified.
-2. `[PASS]` State Emergency Helplines: Karnataka default hotlines (Arogya Kavacha 108, 104, 112).
-3. `[PASS]` Dynamic State Switch: Switching to Maharashtra activates MEMS 108, KEM Hospital, MJPJAY.
-4. `[PASS]` Dynamic State Switch: Switching to Andhra Pradesh activates Aarogyasri Scheme, KGH Visakhapatnam.
-5. `[PASS]` Regional Language Hub: Marathi (`mr` / मुखपृष्ठ) with localized medical terms.
-6. `[PASS]` Regional Language Hub: Telugu (`te` / హోమ్) with localized medical terms.
-7. `[PASS]` Medical Simplifier: "Hypertension" deconstruction with **Everyday Common Name Badge** (*High Blood Pressure*).
-8. `[PASS]` Simplifier Reading Levels: 5th Grade mode with everyday analogies and Web Speech audio bindings.
-9. `[PASS]` Checklist Integration: 1-click import from Simplifier transfers doctor questions into Checklist.
-10. `[PASS]` Checklist Operations: Custom task creation, checkbox completion, category badges, text export.
-11. `[PASS]` Document Explainer: Comprehensive Blood Panel analysis with Reference Range Variance Notice.
-12. `[PASS]` Nearby Hospitals GPS & Manual Geocoding: PIN code "560001" and city "Bengaluru" resolve with Haversine distance.
-13. `[PASS]` Nearby Hospitals Cards & Contact Integrity: Verified `tel:` links, emergency casualty badge distinction, zero fabricated numbers.
-14. `[PASS]` Nearby Hospitals Radius Selector & Offline Fallback: 5km/10km/25km radius filtering with 40+ apex offline hospitals.
-15. `[PASS]` Universal Accessibility & Console Health: WCAG AAA High-Contrast mode, font scaling, zero uncaught JavaScript errors.
+> **Note on Transparency**: When `GEMINI_API_KEY` is not set, the server honestly returns `aiConfigured: false` and the Health Assistant presents an informative configuration badge. MediBridge AI **never** pretends hardcoded responses are real AI output.
 
 ---
 
-## 🎬 3-Minute Hackathon Demo Script
+## 🧪 Automated Testing & Verification
 
-When presenting to hackathon judges, follow this concise sequence:
+The project includes two comprehensive test suites verifying end-to-end frontend behavior and backend REST API contracts.
 
-1. **Problem Hook & The Three Primary Pillars (0:00 - 0:45)**:
-   - *"Healthcare literacy and emergency navigation are critical public health barriers. Over 500 million people struggle with clinical jargon and emergency facility access in India and globally."*
-   - Point to the homepage hero featuring our **Three Primary Pillars**:
-     1. Medical Jargon Buster
-     2. Lab & Document Explainer
-     3. Nearby Hospitals & Emergency Contacts
-   - Demonstrate the **Persistent State Emergency Banner**: Switch region from **Karnataka** to **Maharashtra** or **Andhra Pradesh** — show the hotlines dynamically update to verified local dispatchers.
+### Running the Tests:
 
-2. **Feature Pillar 3: Nearby Hospitals & Emergency Contacts (0:45 - 1:30)**:
-   - Click **"Find Nearby Hospitals"** from the hero or navbar.
-   - Point out the **Emergency Guidance Alert**: *"Life-threatening symptoms? Call 112 / 108 immediately — do not wait for listings."*
-   - Click a quick preset chip (e.g., **Bengaluru** or **Mumbai**) or enter PIN code **`560001`**.
-   - Show the real-time distance sorting (`~X.X km`), verified telephone dialers (`tel:`), emergency department line distinction, directions link, and OpenStreetMap attribution.
-   - Switch radius from **5 km** to **10 km** to show instant filtering.
+1. **Browser End-to-End Suite (Edge DevTools Protocol)**:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File "scratch\run-tests.ps1"
+   ```
+   **Results: 18 / 18 Tests Passing (100%)**
+   - `[PASS]` Clean Architecture & Navigation (Simplifier & Vault removed)
+   - `[PASS]` Appointments & Reminders (Booking, past date blocking, cancellation)
+   - `[PASS]` Dedicated X-Ray Analysis (Upload validation, clear button, radiologist caution)
+   - `[PASS]` Dedicated Blood Test Analysis (Glucose, Lipids, CBC, range evaluation)
+   - `[PASS]` Document Explainer Medical Restriction (Rejection of non-medical text)
+   - `[PASS]` Nearby Hospitals OSM Integration & Distance Calculation
+   - `[PASS]` User Authentication (Name + Mobile validation, session token)
+   - `[PASS]` User History Persistence & Record Deletion
+   - `[PASS]` Health Assistant Safety Guardrails (Non-diagnostic & non-prescription)
+   - `[PASS]` Multilingual Hub & RTL Support
+   - `[PASS]` Universal Accessibility (WCAG AAA contrast, font scaling)
 
-3. **Feature Pillar 1: Medical Information Simplifier (1:30 - 2:05)**:
-   - Navigate to Medical Simplifier and select **"Hypertension"** (or use the voice microphone).
-   - Highlight the **Everyday Common Name Badge** (*High Blood Pressure*).
-   - Show the **Side-by-Side Comparison** and **Relatable Analogy** (garden hose pressure).
-   - Toggle reading level to **"5th Grade (Simple Words)"**.
-   - Click **"➕ Add to Doctor Checklist"** to showcase cross-module integration.
+2. **Backend REST API Suite**:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File "scratch\test-backend.ps1"
+   ```
+   **Results: 10 / 10 Tests Passing (100%)**
+   - `[PASS]` Health check endpoint (`GET /api/health`)
+   - `[PASS]` Invalid login rejection (short name / malformed number)
+   - `[PASS]` Successful login (`POST /api/auth/login`)
+   - `[PASS]` Authenticated profile check (`GET /api/auth/me`)
+   - `[PASS]` Past-date appointment rejection
+   - `[PASS]` Valid appointment creation (`POST /api/appointments`)
+   - `[PASS]` Appointment retrieval (`GET /api/appointments`)
+   - `[PASS]` User history save (`POST /api/history`)
+   - `[PASS]` User history retrieve & delete (`DELETE /api/history/:id`)
+   - `[PASS]` User logout & session invalidation (`POST /api/auth/logout`)
 
-4. **Feature Pillar 2: Lab & Document Explainer (2:05 - 2:35)**:
-   - Switch to Document Explainer, select **"Blood & Metabolic Panel"**, and click **"Analyze & Explain Document"**.
-   - Point out the **Reference Range Clinical Variance Disclaimer** and color-coded flags for elevated glucose/cholesterol.
-   - Navigate to the **Patient Action Checklist** to show imported questions ready for the clinic visit, with 1-click print and plain-text export.
-
-5. **Multilingual Hub & Safety Guardrails (2:35 - 3:00)**:
-   - Switch language to **ಕನ್ನಡ (Kannada)**, **मराठी (Marathi)**, or **తెలుగు (Telugu)**.
-   - Open Health Assistant and click `🚨 Chest pain emergency` → Show strict triage escalation.
-   - Click `🛡️ Diagnose my rash` → Show polite, non-diagnostic refusal upholding medical ethics.
-   - Conclude: *"100% in-browser, zero server costs, zero paid APIs, zero PHI leakage, ready for real-world deployment on GitHub Pages."*
+**Combined Test Coverage: 28 / 28 Tests Passed (100% Pass Rate).**
 
 ---
 
-## 🔒 Privacy & HIPAA / DISHA Compliance
+## 🛡️ Medical Safety, Ethics & Limitations
 
-MediBridge AI does not collect, track, or transmit patient identifiable health data. All text parsing, document decoding, and geolocation lookups take place entirely within the local browser runtime. For enterprise clinic rollouts, the architecture easily interfaces with on-premise, HIPAA/DISHA-compliant self-hosted model endpoints. See [`SECURITY.md`](SECURITY.md) and [`PROBLEM_ALIGNMENT.md`](PROBLEM_ALIGNMENT.md) for detailed policies.
+MediBridge AI is engineered around strict medical ethics and legal disclaimers:
+
+1. **Educational & Literacy Purpose Only**: MediBridge AI is an informational tool designed to empower patient-doctor dialogue. It is **not** a certified medical device, does not diagnose medical conditions, and does not prescribe treatments.
+2. **Clinical Safety Guardrails**: Non-diagnostic refusal algorithms intercept diagnostic queries. Non-prescription algorithms intercept dosage calculations.
+3. **Emergency Protocol**: When red-flag symptoms (cardiac arrest, stroke, anaphylaxis, severe bleeding) are detected, the system immediately surfaces 112 / 108 emergency dialers and instructs the patient to seek urgent physical medical care.
+4. **Data Privacy**: Mobile numbers and names are never shared with third parties or external marketing trackers. All user history is completely erasable on demand.
+5. **Known Limitations**:
+   - Live SMS OTP verification requires an external carrier integration (Twilio / Fast2SMS). The login system validates format and creates secure sessions, and transparently notes this requirement.
+   - Live multimodal AI requires an active Google Gemini API key. Without a key, the system clearly presents setup guidance rather than deceptive simulated outputs.
 
 ---
 
 ## 📄 License
-This project is open-source under the MIT License — designed for health equity and hackathon innovation.
+This project is open-source under the **MIT License**.

@@ -138,6 +138,7 @@ class HealthAssistant {
     let providerLabel = null;
 
     // Try Backend Server Proxy first (/api/chat)
+    let aiUnconfigured = false;
     try {
       const serverRes = await fetch('/api/chat', {
         method: 'POST',
@@ -154,7 +155,12 @@ class HealthAssistant {
         const data = await serverRes.json();
         if (data.success && data.reply) {
           aiResponse = data.reply;
-          providerLabel = data.provider || "MediBridge Live AI Server";
+          providerLabel = data.provider || "Google Gemini 1.5 Flash (Live Server Proxy)";
+        }
+      } else if (serverRes.status === 503) {
+        const errData = await serverRes.json().catch(() => ({}));
+        if (errData.error === 'AI_NOT_CONFIGURED') {
+          aiUnconfigured = true;
         }
       }
     } catch (e) {
@@ -175,8 +181,14 @@ class HealthAssistant {
 
     // 5. Intelligent Multi-Turn Clinical Knowledge Engine Fallback
     if (!aiResponse) {
-      aiResponse = this.generateDetailedConversationalResponse(cleanMsg, currentDocContext);
-      providerLabel = "MediBridge Clinical Intelligence Engine (Offline / Multi-Turn)";
+      const offlineReply = this.generateDetailedConversationalResponse(cleanMsg, currentDocContext);
+      if (aiUnconfigured) {
+        aiResponse = `> ⚠️ **Notice**: Google Gemini API key is not configured on the server. Set \`GEMINI_API_KEY\` in your \`.env\` file for live LLM responses.\n\n${offlineReply}`;
+        providerLabel = "MediBridge Clinical Engine (Offline / Deterministic Fallback)";
+      } else {
+        aiResponse = offlineReply;
+        providerLabel = "MediBridge Clinical Intelligence Engine (Offline / Multi-Turn)";
+      }
     }
 
     if (currentLanguage !== 'en' && typeof translateText === 'function') {
@@ -187,15 +199,25 @@ class HealthAssistant {
     this.chatHistory.push({ role: 'user', text: cleanMsg });
     this.chatHistory.push({ role: 'assistant', text: aiResponse });
 
+    // Save to user history if logged in
+    if (window.authManager && window.authManager.isAuthenticated()) {
+      window.authManager.saveHistory('conversation', 'Health Assistant Consultation', cleanMsg, { reply: aiResponse });
+    }
+
     // Generate dynamic suggested follow-ups
     const followUps = this.generateFollowUpSuggestions(cleanMsg, this.activeTopic);
+    // Add hospital discovery follow-up
+    if (!followUps.includes("🏥 Find nearby hospitals & plan appointment")) {
+      followUps.unshift("🏥 Find nearby hospitals & plan appointment");
+    }
 
     return {
       type: 'conversational_ai',
       safetyBadge: `💡 ${providerLabel}`,
       text: aiResponse,
       urgentAction: false,
-      followUps: followUps
+      followUps: followUps,
+      offerHospitalAssistance: true
     };
   }
 
@@ -605,9 +627,10 @@ A safe medical diagnosis requires:
    */
   checkPrescriptionRequest(text) {
     const prescriptionPatterns = [
-      /\b(?:how\s+many\s+mg|how\s+much|what\s+dose|what\s+dosage|how\s+many\s+(?:pills|tablets|capsules))\b.*(?:take|consume|use|drink|need)/i,
+      /\b(?:how\s+many\s+(?:mg|milligrams|grams|ml|pills|tablets|capsules)|what\s+(?:dose|dosage)|how\s+much)\b.*(?:take|consume|use|drink|need)/i,
       /\b(?:prescribe\s+(?:me|a|some)|what\s+antibiotic\s+should\s+i\s+take|recommend\s+an\s+antibiotic|give\s+me\s+a\s+prescription)\b/i,
-      /\b(?:amoxicillin|azithromycin|ciprofloxacin|ibuprofen|paracetamol|metformin|antibiotic)\b.*(?:dose|dosage|how\s+many\s+mg|how\s+much\s+to\s+take)/i
+      /\b(?:amoxicillin|azithromycin|ciprofloxacin|ibuprofen|paracetamol|metformin|antibiotic)\b.*(?:dose|dosage|how\s+many|how\s+much)/i,
+      /\b(?:dose|dosage|how\s+many\s+(?:mg|milligrams|grams|pills)|how\s+much)\b.*(?:amoxicillin|azithromycin|ciprofloxacin|ibuprofen|paracetamol|metformin|antibiotic|medicine|medication)/i
     ];
 
     if (prescriptionPatterns.some(p => p.test(text))) {

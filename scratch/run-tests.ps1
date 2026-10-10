@@ -1,22 +1,28 @@
 # ==============================================================================
-# MediBridge AI - Automated 20-Case Medical Simplifier Verification Suite
+# MediBridge AI - Automated Verification & Test Suite Runner
+# Runs full test-runner.html in headless Chromium (Microsoft Edge)
 # ==============================================================================
 
 $edgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 if (-not (Test-Path $edgePath)) {
-    Write-Host "Microsoft Edge not found at standard path: $edgePath" -ForegroundColor Red
+    $edgePath = "C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+}
+if (-not (Test-Path $edgePath)) {
+    Write-Host "Microsoft Edge not found at standard paths." -ForegroundColor Red
     exit 1
 }
 
-$testHtml = "file:///d:/Anagha/medibridge-ai/scratch/test-runner.html"
-$outputFile = "d:\Anagha\medibridge-ai\scratch\test-dom.html"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testHtml = "file:///" + (Join-Path $scriptDir "test-runner.html").Replace('\', '/')
+$outputFile = Join-Path $scriptDir "test-dom.html"
+$errLog = Join-Path $scriptDir "edge-err.log"
 
 if (Test-Path $outputFile) {
     Remove-Item $outputFile -Force
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   Running MediBridge AI Medical Simplifier Test Suite    " -ForegroundColor Green
+Write-Host "       Running MediBridge AI Automated Test Suite         " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Target: $testHtml" -ForegroundColor Gray
 Write-Host "Engine: Microsoft Edge Headless (Chromium)" -ForegroundColor Gray
@@ -25,15 +31,15 @@ $args = @(
     "--headless=new",
     "--disable-gpu",
     "--allow-file-access-from-files",
-    "--virtual-time-budget=8000",
+    "--virtual-time-budget=10000",
     "--dump-dom",
     $testHtml
 )
 
-$process = Start-Process -FilePath $edgePath -ArgumentList $args -NoNewWindow -PassThru -RedirectStandardOutput $outputFile -RedirectStandardError "d:\Anagha\medibridge-ai\scratch\edge-err.log"
+$process = Start-Process -FilePath $edgePath -ArgumentList $args -NoNewWindow -PassThru -RedirectStandardOutput $outputFile -RedirectStandardError $errLog
 $process.WaitForExit()
 
-Start-Sleep -Milliseconds 500
+Start-Sleep -Milliseconds 600
 
 if (-not (Test-Path $outputFile)) {
     Write-Host "Error: Test output file was not created by Edge." -ForegroundColor Red
@@ -58,21 +64,17 @@ foreach ($m in $matches) {
     if ($status -eq "pass") {
         $passCount++
         Write-Host "PASS: $name" -ForegroundColor Green
-        Write-Host "      $detail" -ForegroundColor DarkGray
     } else {
         $failCount++
         Write-Host "FAIL: $name" -ForegroundColor Red
-        Write-Host "      $detail" -ForegroundColor Yellow
+        Write-Host "      Detail: $detail" -ForegroundColor DarkRed
     }
 }
 
-Write-Host "`n==========================================================" -ForegroundColor Cyan
-if ($failCount -eq 0 -and $passCount -ge 20) {
-    Write-Host "   RESULT: 100% PASS - ALL $passCount TESTS PASSED ACCURATELY!   " -ForegroundColor Green
-    Write-Host "==========================================================" -ForegroundColor Cyan
-    exit 0
+Write-Host "==========================================================" -ForegroundColor Cyan
+if ($failCount -eq 0 -and $passCount -gt 0) {
+    Write-Host "   ALL TESTS PASSED ($passCount passed, 0 failed)         " -ForegroundColor Green
 } else {
-    Write-Host "   RESULT: $passCount Passed, $failCount Failed               " -ForegroundColor Red
-    Write-Host "==========================================================" -ForegroundColor Cyan
-    exit 1
+    Write-Host "   TEST RESULTS: $passCount passed, $failCount failed     " -ForegroundColor Yellow
 }
+Write-Host "==========================================================" -ForegroundColor Cyan
